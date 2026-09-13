@@ -1,0 +1,36 @@
+## Build and Output directories
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+
+## Visual Studio cache & temporary files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+
+## Visual Studio Code
+.vscode/
+
+## Rider
+.idea/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Operating System Files
+.DS_Store
+Thumbs.db
+
+## Log files
+*.log
+
+## Published files
+publish/
+[Pp]ublished/
