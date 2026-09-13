@@ -48,6 +48,8 @@ public class Vehicle
 
     public int ReviewCount { get; set; } = 0;
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     // Relational Navigation Properties
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
