@@ -34,3 +34,9 @@ Thumbs.db
 ## Published files
 publish/
 [Pp]ublished/
+
+## Environment and Secrets
+.env
+.env.*
+!.env.example
+
