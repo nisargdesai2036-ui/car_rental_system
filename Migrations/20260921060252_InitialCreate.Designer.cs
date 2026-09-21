@@ -12,8 +12,8 @@ using wad_project.Data;
 namespace wad_project.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260916163448_InitialSupabaseSetup")]
-    partial class InitialSupabaseSetup
+    [Migration("20260921060252_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using wad_project.Data;
 using wad_project.Models;
 using wad_project.ViewModels;
@@ -6,61 +7,50 @@ namespace wad_project.Services;
 
 public class BookingService : IBookingService
 {
-    private readonly IDataStore _dataStore;
+    private readonly ApplicationDbContext _context;
 
-    public BookingService(IDataStore dataStore)
+    public BookingService(ApplicationDbContext context)
     {
-        _dataStore = dataStore;
+        _context = context;
     }
 
-    public Task<bool> IsVehicleAvailableAsync(int vehicleId, DateTime pickup, DateTime returnTime, int? excludeBookingId = null)
+    public async Task<bool> IsVehicleAvailableAsync(int vehicleId, DateTime pickup, DateTime returnTime, int? excludeBookingId = null)
     {
-        lock (_dataStore.Vehicles)
+        var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == vehicleId);
+        if (vehicle == null || vehicle.Status == VehicleStatus.UnderMaintenance)
         {
-            var vehicle = _dataStore.Vehicles.FirstOrDefault(v => v.Id == vehicleId);
-            if (vehicle == null || vehicle.Status == VehicleStatus.UnderMaintenance)
-            {
-                return Task.FromResult(false);
-            }
+            return false;
         }
 
-        lock (_dataStore.Bookings)
-        {
-            // Simple overlap algorithm: (pickup < existing.ReturnDateTime) && (returnTime > existing.PickupDateTime)
-            bool hasConflict = _dataStore.Bookings.Any(b =>
-                b.VehicleId == vehicleId &&
-                b.Status != BookingStatus.Cancelled &&
-                (!excludeBookingId.HasValue || b.Id != excludeBookingId.Value) &&
-                pickup < b.ReturnDateTime &&
-                returnTime > b.PickupDateTime);
+        // Overlap algorithm: (pickup < existing.ReturnDateTime) && (returnTime > existing.PickupDateTime)
+        bool hasConflict = await _context.Bookings.AnyAsync(b =>
+            b.VehicleId == vehicleId &&
+            b.Status != BookingStatus.Cancelled &&
+            (!excludeBookingId.HasValue || b.Id != excludeBookingId.Value) &&
+            pickup < b.ReturnDateTime &&
+            returnTime > b.PickupDateTime);
 
-            return Task.FromResult(!hasConflict);
-        }
+        return !hasConflict;
     }
 
-    public Task<(bool Success, string Message, PriceBreakdownViewModel? Price)> CalculatePriceAsync(
+    public async Task<(bool Success, string Message, PriceBreakdownViewModel? Price)> CalculatePriceAsync(
         int vehicleId, RentalType rentalType, DateTime pickup, DateTime returnTime, string? promoCode = null)
     {
         // 1. Validate dates
         if (pickup < DateTime.UtcNow.AddMinutes(-5))
         {
-            return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((false, "Pickup date and time cannot be in the past.", null));
+            return (false, "Pickup date and time cannot be in the past.", null);
         }
 
         if (returnTime <= pickup)
         {
-            return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((false, "Return date and time must be after pickup date and time.", null));
+            return (false, "Return date and time must be after pickup date and time.", null);
         }
 
-        Vehicle? vehicle;
-        lock (_dataStore.Vehicles)
-        {
-            vehicle = _dataStore.Vehicles.FirstOrDefault(v => v.Id == vehicleId);
-        }
-
+        var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == vehicleId);
         if (vehicle == null)
         {
-            return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((false, "Vehicle not found.", null));
+            return (false, "Vehicle not found.", null);
         }
 
         // 2. Calculate duration and base rate
@@ -85,16 +75,13 @@ public class BookingService : IBookingService
 
         // 3. Simple Weekend dynamic surge (+15% if Saturday or Sunday)
         decimal multiplier = 1.0m;
-        lock (_dataStore.PricingRules)
-        {
-            var weekendRule = _dataStore.PricingRules.FirstOrDefault(r =>
-                r.IsActive &&
-                (!r.DayOfWeek.HasValue || r.DayOfWeek.Value == pickup.DayOfWeek));
+        var weekendRule = await _context.PricingRules.FirstOrDefaultAsync(r =>
+            r.IsActive &&
+            (!r.DayOfWeek.HasValue || r.DayOfWeek.Value == pickup.DayOfWeek));
 
-            if (weekendRule != null)
-            {
-                multiplier = weekendRule.Multiplier;
-            }
+        if (weekendRule != null)
+        {
+            multiplier = weekendRule.Multiplier;
         }
 
         decimal basePrice = Math.Round(subtotal * multiplier, 2);
@@ -105,32 +92,29 @@ public class BookingService : IBookingService
         if (!string.IsNullOrWhiteSpace(promoCode))
         {
             var code = promoCode.Trim().ToUpperInvariant();
-            lock (_dataStore.PromoCodes)
+            var promo = await _context.PromoCodes.FirstOrDefaultAsync(p => p.Code.ToUpper() == code);
+
+            if (promo == null)
             {
-                var promo = _dataStore.PromoCodes.FirstOrDefault(p => p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
-
-                if (promo == null)
-                {
-                    return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((false, $"Promo code '{promoCode}' is invalid.", null));
-                }
-
-                if (!promo.IsActive || DateTime.UtcNow < promo.ValidFrom || DateTime.UtcNow > promo.ValidTo)
-                {
-                    return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((false, $"Promo code '{promoCode}' is expired or inactive.", null));
-                }
-
-                if (basePrice < promo.MinBookingAmount)
-                {
-                    return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((false, $"Promo code requires a minimum booking of Rs.{promo.MinBookingAmount:F2}.", null));
-                }
-
-                appliedCode = promo.Code;
-                discountAmount = promo.DiscountType == DiscountType.Percentage
-                    ? Math.Round(basePrice * (promo.DiscountValue / 100m), 2)
-                    : promo.DiscountValue;
-
-                discountAmount = Math.Min(discountAmount, basePrice);
+                return (false, $"Promo code '{promoCode}' is invalid.", null);
             }
+
+            if (!promo.IsActive || DateTime.UtcNow < promo.ValidFrom || DateTime.UtcNow > promo.ValidTo)
+            {
+                return (false, $"Promo code '{promoCode}' is expired or inactive.", null);
+            }
+
+            if (basePrice < promo.MinBookingAmount)
+            {
+                return (false, $"Promo code requires a minimum booking of Rs.{promo.MinBookingAmount:F2}.", null);
+            }
+
+            appliedCode = promo.Code;
+            discountAmount = promo.DiscountType == DiscountType.Percentage
+                ? Math.Round(basePrice * (promo.DiscountValue / 100m), 2)
+                : promo.DiscountValue;
+
+            discountAmount = Math.Min(discountAmount, basePrice);
         }
 
         decimal totalAmount = Math.Max(0, basePrice - discountAmount);
@@ -147,7 +131,7 @@ public class BookingService : IBookingService
             TotalAmount = totalAmount
         };
 
-        return Task.FromResult<(bool, string, PriceBreakdownViewModel?)>((true, "Price calculated successfully.", price));
+        return (true, "Price calculated successfully.", price);
     }
 
     public async Task<(bool Success, string Message, Booking? Booking)> CreateBookingAsync(BookingRequestViewModel request)
@@ -167,38 +151,27 @@ public class BookingService : IBookingService
         }
 
         var price = priceResult.Price;
-        User? user;
-        Vehicle? vehicle;
-        PromoCode? promo = null;
-
-        lock (_dataStore.Users)
-        {
-            user = _dataStore.Users.FirstOrDefault(u => u.Id == request.UserId);
-        }
-
-        lock (_dataStore.Vehicles)
-        {
-            vehicle = _dataStore.Vehicles.FirstOrDefault(v => v.Id == request.VehicleId);
-        }
+        var user = await _context.Users.FindAsync(request.UserId);
+        var vehicle = await _context.Vehicles.FindAsync(request.VehicleId);
 
         if (user == null || vehicle == null)
         {
             return (false, "User or Vehicle not found.", null);
         }
 
+        PromoCode? promo = null;
         if (!string.IsNullOrWhiteSpace(price.AppliedPromoCode))
         {
-            lock (_dataStore.PromoCodes)
-            {
-                promo = _dataStore.PromoCodes.FirstOrDefault(p => p.Code == price.AppliedPromoCode);
-            }
+            var code = price.AppliedPromoCode.ToUpperInvariant();
+            promo = await _context.PromoCodes.FirstOrDefaultAsync(p => p.Code.ToUpper() == code);
         }
+
+        var bookingCount = await _context.Bookings.CountAsync();
 
         // 3. Create booking in Pending status (awaiting full payment)
         var booking = new Booking
         {
-            Id = _dataStore.NextBookingId(),
-            BookingReference = $"DE-{DateTime.UtcNow:yyyyMM}-{_dataStore.Bookings.Count + 1001}",
+            BookingReference = $"DE-{DateTime.UtcNow:yyyyMM}-{bookingCount + 1001}",
             UserId = user.Id,
             User = user,
             VehicleId = vehicle.Id,
@@ -217,57 +190,55 @@ public class BookingService : IBookingService
             CreatedAt = DateTime.UtcNow
         };
 
-        lock (_dataStore.Bookings)
-        {
-            _dataStore.Bookings.Add(booking);
-        }
+        await _context.Bookings.AddAsync(booking);
+        await _context.SaveChangesAsync();
 
         return (true, "Booking created. Please proceed to payment to confirm.", booking);
     }
 
-    public Task<Booking?> GetBookingByIdAsync(int id)
+    public async Task<Booking?> GetBookingByIdAsync(int id)
     {
-        lock (_dataStore.Bookings)
-        {
-            var booking = _dataStore.Bookings.FirstOrDefault(b => b.Id == id);
-            return Task.FromResult(booking);
-        }
+        return await _context.Bookings
+            .Include(b => b.User)
+            .Include(b => b.Vehicle)
+            .Include(b => b.Payment)
+            .Include(b => b.Review)
+            .Include(b => b.PromoCode)
+            .FirstOrDefaultAsync(b => b.Id == id);
     }
 
-    public Task<List<Booking>> GetUserBookingsAsync(int userId)
+    public async Task<List<Booking>> GetUserBookingsAsync(int userId)
     {
-        lock (_dataStore.Bookings)
-        {
-            var list = _dataStore.Bookings
-                .Where(b => b.UserId == userId)
-                .OrderByDescending(b => b.CreatedAt)
-                .ToList();
-            return Task.FromResult(list);
-        }
+        return await _context.Bookings
+            .Include(b => b.Vehicle)
+            .Include(b => b.Payment)
+            .Include(b => b.Review)
+            .Include(b => b.PromoCode)
+            .Where(b => b.UserId == userId)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
     }
 
-    public Task<(bool Success, string Message)> CancelBookingAsync(int bookingId, int userId)
+    public async Task<(bool Success, string Message)> CancelBookingAsync(int bookingId, int userId)
     {
-        lock (_dataStore.Bookings)
+        var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
+        if (booking == null)
         {
-            var booking = _dataStore.Bookings.FirstOrDefault(b => b.Id == bookingId);
-            if (booking == null)
-            {
-                return Task.FromResult((false, "Booking not found."));
-            }
-
-            if (booking.UserId != userId)
-            {
-                return Task.FromResult((false, "Unauthorized to cancel this booking."));
-            }
-
-            if (booking.Status == BookingStatus.Completed || booking.Status == BookingStatus.Cancelled)
-            {
-                return Task.FromResult((false, $"Cannot cancel a booking that is already {booking.Status}."));
-            }
-
-            booking.Status = BookingStatus.Cancelled;
-            return Task.FromResult((true, "Booking cancelled successfully."));
+            return (false, "Booking not found.");
         }
+
+        if (booking.UserId != userId)
+        {
+            return (false, "Unauthorized to cancel this booking.");
+        }
+
+        if (booking.Status == BookingStatus.Completed || booking.Status == BookingStatus.Cancelled)
+        {
+            return (false, $"Cannot cancel a booking that is already {booking.Status}.");
+        }
+
+        booking.Status = BookingStatus.Cancelled;
+        await _context.SaveChangesAsync();
+        return (true, "Booking cancelled successfully.");
     }
 }
