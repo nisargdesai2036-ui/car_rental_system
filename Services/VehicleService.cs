@@ -88,13 +88,10 @@ public class VehicleService : IVehicleService
 
         foreach (var v in candidates)
         {
-            // Must be able to accommodate passengers
             if (v.SeatingCapacity < criteria.Passengers)
                 continue;
 
             decimal estimatedCost = v.DailyRate * criteria.DurationDays;
-
-            // Simple rule-based scoring (out of 100)
             double score = 0;
             var reasons = new List<string>();
 
@@ -123,7 +120,7 @@ public class VehicleService : IVehicleService
             }
             else
             {
-                continue; // Skip if well over budget
+                continue;
             }
 
             // 3. Preferred Vehicle Type (25 pts)
@@ -159,7 +156,7 @@ public class VehicleService : IVehicleService
     {
         var plate = vehicle.LicensePlate.Trim().ToLower();
 
-        // Business Rule: Check for duplicate license plate
+        // Check for duplicate license plate
         if (await _context.Vehicles.AnyAsync(v => v.LicensePlate.ToLower() == plate))
         {
             return (false, "A vehicle with this license plate already exists.");

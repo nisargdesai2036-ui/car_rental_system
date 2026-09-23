@@ -2,9 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace wad_project.ViewModels;
 
-/// <summary>
-/// Model used for user registration with DataAnnotations for Razor asp-validation-for tag helpers.
-/// </summary>
 public class RegisterViewModel
 {
     [Required(ErrorMessage = "Full Name is required.")]
@@ -22,13 +19,12 @@ public class RegisterViewModel
     [Display(Name = "Mobile Number")]
     public string MobileNumber { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Driving License Number is required for self-drive rental.")]
-    [StringLength(30, ErrorMessage = "Driving license number cannot exceed 30 characters.")]
     [Display(Name = "Driving License Number")]
-    public string DrivingLicenseNumber { get; set; } = string.Empty;
+    [StringLength(30, ErrorMessage = "Driving license number cannot exceed 30 characters.")]
+    public string? DrivingLicenseNumber { get; set; }
 
     [Required(ErrorMessage = "Password is required.")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long.")]
+    [StringLength(100, MinimumLength = 4, ErrorMessage = "Password must be at least 4 characters long.")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
 
@@ -39,9 +35,6 @@ public class RegisterViewModel
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// Model used for user login with DataAnnotations for Razor asp-validation-for tag helpers.
-/// </summary>
 public class LoginViewModel
 {
     [Required(ErrorMessage = "Email or Mobile number is required.")]
@@ -51,4 +44,27 @@ public class LoginViewModel
     [Required(ErrorMessage = "Password is required.")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
+
+    public string? ReturnUrl { get; set; }
+}
+
+public class UserProfileViewModel
+{
+    public int Id { get; set; }
+
+    [Display(Name = "Full Name")]
+    [Required]
+    [StringLength(100)]
+    public string FullName { get; set; } = string.Empty;
+
+    [Display(Name = "Email Address")]
+    public string Email { get; set; } = string.Empty;
+
+    [Display(Name = "Mobile Number")]
+    public string MobileNumber { get; set; } = string.Empty;
+
+    [Display(Name = "Driving License Number")]
+    public string? DrivingLicenseNumber { get; set; }
+
+    public DateTime CreatedAt { get; set; }
 }

@@ -3,7 +3,8 @@ namespace wad_project.Models;
 public enum UserRole
 {
     Customer = 1,
-    Administrator = 2
+    Administrator = 2,
+    VehicleProvider = 3
 }
 
 public enum RentalType

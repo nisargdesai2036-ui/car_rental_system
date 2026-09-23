@@ -19,13 +19,13 @@ public class UserService : IUserService
         var email = model.Email.Trim().ToLowerInvariant();
         var phone = model.MobileNumber.Trim();
 
-        // Business Rule 1: Check for duplicate email
+        // Check for duplicate email
         if (await _context.Users.AnyAsync(u => u.Email.ToLower() == email))
         {
             return (false, "An account with this email address already exists.", null);
         }
 
-        // Business Rule 2: Check for duplicate mobile number
+        // Check for duplicate mobile number
         if (await _context.Users.AnyAsync(u => u.MobileNumber == phone))
         {
             return (false, "An account with this mobile number already exists.", null);
@@ -36,8 +36,8 @@ public class UserService : IUserService
             FullName = model.FullName.Trim(),
             Email = email,
             MobileNumber = phone,
-            DrivingLicenseNumber = model.DrivingLicenseNumber.Trim().ToUpperInvariant(),
-            Password = model.Password,
+            DrivingLicenseNumber = string.IsNullOrWhiteSpace(model.DrivingLicenseNumber) ? null : model.DrivingLicenseNumber.Trim().ToUpperInvariant(),
+            Password = model.Password, // Simple authentication without hashing
             Role = UserRole.Customer,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
@@ -51,11 +51,10 @@ public class UserService : IUserService
 
     public async Task<(bool Success, string Message, User? User)> LoginAsync(LoginViewModel model)
     {
-        var input = model.EmailOrMobile.Trim();
+        var input = model.EmailOrMobile.Trim().ToLowerInvariant();
 
-        // Business Rule 3: Find user by email or phone
         var user = await _context.Users.FirstOrDefaultAsync(u =>
-            u.Email.ToLower() == input.ToLower() ||
+            u.Email.ToLower() == input ||
             u.MobileNumber == input);
 
         if (user == null)
@@ -63,13 +62,12 @@ public class UserService : IUserService
             return (false, "Invalid email/mobile or password.", null);
         }
 
-        // Business Rule 4: Verify account is active
         if (!user.IsActive)
         {
             return (false, "Your account is deactivated. Please contact support.", null);
         }
 
-        // Business Rule 5: Verify password matches
+        // Simple password comparison without hashing
         if (user.Password != model.Password)
         {
             return (false, "Invalid email/mobile or password.", null);

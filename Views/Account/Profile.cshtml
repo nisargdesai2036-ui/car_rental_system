@@ -1,0 +1,41 @@
+@model wad_project.ViewModels.UserProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-3 text-center">My Profile</h3>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted">Full Name</label>
+                    <div class="form-control-plaintext fw-bold">@Model.FullName</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted">Email</label>
+                    <div class="form-control-plaintext">@Model.Email</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted">Mobile Number</label>
+                    <div class="form-control-plaintext">@Model.MobileNumber</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted">Driving License</label>
+                    <div class="form-control-plaintext">@(string.IsNullOrEmpty(Model.DrivingLicenseNumber) ? "Not provided" : Model.DrivingLicenseNumber)</div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

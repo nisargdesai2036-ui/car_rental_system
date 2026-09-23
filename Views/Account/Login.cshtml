@@ -1,0 +1,43 @@
+@model wad_project.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-3 text-center">Sign In</h3>
+
+                <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="EmailOrMobile" class="form-label fw-semibold"></label>
+                        <input asp-for="EmailOrMobile" class="form-control" placeholder="Email or Mobile" autofocus />
+                        <span asp-validation-for="EmailOrMobile" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label fw-semibold"></label>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="Password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
+                        Sign In
+                    </button>
+
+                    <div class="text-center mt-3 small">
+                        Don't have an account? <a asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]">Register</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
