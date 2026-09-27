@@ -41,12 +41,15 @@ public class Vehicle
 
     public string ImageUrl { get; set; } = string.Empty;
 
-    public VehicleStatus Status { get; set; } = VehicleStatus.Available;
+    public VehicleStatus Status { get; set; } = VehicleStatus.Pending;
 
     [Column(TypeName = "decimal(3,2)")]
     public decimal AverageRating { get; set; } = 0.0m;
 
     public int ReviewCount { get; set; } = 0;
+
+    public int? OwnerId { get; set; }
+    public User? Owner { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -40,3 +40,7 @@ publish/
 .env.*
 !.env.example
 
+## SQLite Database files
+*.db
+*.db-shm
+*.db-wal

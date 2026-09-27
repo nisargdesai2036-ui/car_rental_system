@@ -35,6 +35,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Vehicle>(entity =>
         {
             entity.HasIndex(v => v.LicensePlate).IsUnique();
+
+            entity.HasOne(v => v.Owner)
+                  .WithMany()
+                  .HasForeignKey(v => v.OwnerId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Booking

@@ -13,6 +13,7 @@ This folder holds the project documentation for **DriveEase**, a self-drive vehi
 | `DriveEase_Views.pdf` | The Views layer — Razor config views, the shared layout, and content views. |
 | `DriveEase_ViewModels.pdf` | The ViewModels layer — all 10 view models with validation rules and purpose. |
 | `DriveEase_Services.pdf` | The Services layer — the 6 business services, their methods, and business rules. |
+| `AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md` | Verification report for Authentication and Role-Based Access Control (RBAC) security test suite. |
 
 ## Suggested reading order
 
@@ -21,5 +22,6 @@ This folder holds the project documentation for **DriveEase**, a self-drive vehi
 3. `DriveEase_Services.pdf` — the business logic that acts on the data
 4. `DriveEase_ViewModels.pdf` → `DriveEase_Controllers.pdf` → `DriveEase_Views.pdf` — the presentation flow
 5. `DriveEase_Data.pdf` — how data is stored and seeded
+6. `AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md` — authentication and authorization test suite verification
 
 > Note: `WAD_Project_Requirements.pdf` remains in the project root as it is the original assignment brief, not generated documentation.

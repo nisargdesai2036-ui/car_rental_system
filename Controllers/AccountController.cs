@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using wad_project.Services;
@@ -48,7 +48,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        // Sign in user using simple Cookie Authentication without hashing
+        // Sign in user using Identity's Application Cookie Scheme
         await SignInUserCookieAsync(user);
         _logger.LogInformation("User {Email} registered and signed in.", user.Email);
 
@@ -107,7 +107,7 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
         _logger.LogInformation("User logged out.");
         return RedirectToAction("Index", "Home");
     }
@@ -152,9 +152,9 @@ public class AccountController : Controller
             new(ClaimTypes.Role, user.Role.ToString())
         };
 
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var identity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
         var principal = new ClaimsPrincipal(identity);
 
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principal);
     }
 }

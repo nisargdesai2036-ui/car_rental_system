@@ -12,6 +12,8 @@ public class ApplicationUser : IdentityUser
     [StringLength(30)]
     public string? DrivingLicenseNumber { get; set; }
 
+    public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

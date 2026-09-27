@@ -6,6 +6,7 @@ namespace wad_project.Services;
 public interface IUserService
 {
     Task<(bool Success, string Message, User? User)> RegisterAsync(RegisterViewModel model);
+    Task<(bool Success, string Message, User? User)> RegisterOwnerAsync(RegisterViewModel model);
     Task<(bool Success, string Message, User? User)> LoginAsync(LoginViewModel model);
     Task<User?> GetUserByIdAsync(int id);
     Task<List<User>> GetAllUsersAsync();

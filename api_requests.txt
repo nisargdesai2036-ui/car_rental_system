@@ -1,0 +1,318 @@
+# DriveEase Car Rental - 3-Role API Request Reference Guide & HTTP Tests
+# Base URL: http://localhost:5124
+# Roles: Admin, Customer, Owner
+
+###############################################################################
+# 1. AUTHENTICATION CONTROLLER (/api/auth)
+###############################################################################
+
+### 1.1 Register Customer (Default VerificationStatus: Pending)
+POST http://localhost:5124/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Amit Patel",
+  "email": "amit@gmail.com",
+  "password": "Password@123",
+  "confirmPassword": "Password@123",
+  "mobileNumber": "9898989898",
+  "drivingLicenseNumber": "GJ05-2023-11223"
+}
+
+### 1.2 Register Owner (Default VerificationStatus: Pending)
+POST http://localhost:5124/api/auth/register-owner
+Content-Type: application/json
+
+{
+  "fullName": "Suresh Mehta",
+  "email": "suresh.owner@gmail.com",
+  "password": "Password@123",
+  "confirmPassword": "Password@123",
+  "mobileNumber": "9876501234",
+  "drivingLicenseNumber": "GJ05-OWNER-7788"
+}
+
+### 1.3 Login Admin (Default Seed: admin@driveease.com / 1234)
+POST http://localhost:5124/api/auth/login
+Content-Type: application/json
+
+{
+  "emailOrMobile": "admin@driveease.com",
+  "password": "1234"
+}
+
+### 1.4 Login Owner (Default Seed: owner@driveease.com / 1234)
+POST http://localhost:5124/api/auth/login
+Content-Type: application/json
+
+{
+  "emailOrMobile": "owner@driveease.com",
+  "password": "1234"
+}
+
+### 1.5 Login Customer (Default Seed: rahul@gmail.com / 1234)
+POST http://localhost:5124/api/auth/login
+Content-Type: application/json
+
+{
+  "emailOrMobile": "rahul@gmail.com",
+  "password": "1234"
+}
+
+### 1.6 Get Current Logged-in User Profile
+GET http://localhost:5124/api/auth/me
+
+### 1.7 Update Profile
+PUT http://localhost:5124/api/auth/profile
+Content-Type: application/json
+
+{
+  "fullName": "Rahul Sharma (Updated)",
+  "mobileNumber": "9823456780",
+  "drivingLicenseNumber": "MH12-2021-00892"
+}
+
+### 1.8 Logout
+POST http://localhost:5124/api/auth/logout
+
+
+###############################################################################
+# 2. ADMIN VERIFICATION & MANAGEMENT CONTROLLER (/api/admin)
+###############################################################################
+
+### 2.1 Admin Dashboard Metrics
+GET http://localhost:5124/api/admin/dashboard
+
+### 2.2 Get Pending Owners Awaiting Verification
+GET http://localhost:5124/api/admin/owners/pending
+
+### 2.3 Approve Owner (Sets VerificationStatus = Verified)
+PUT http://localhost:5124/api/admin/owners/2/approve
+
+### 2.4 Reject Owner (Sets VerificationStatus = Rejected)
+PUT http://localhost:5124/api/admin/owners/2/reject
+
+### 2.5 Get Pending Customers Awaiting Verification
+GET http://localhost:5124/api/admin/customers/pending
+
+### 2.6 Approve Customer (Sets VerificationStatus = Verified)
+PUT http://localhost:5124/api/admin/customers/4/approve
+
+### 2.7 Reject Customer
+PUT http://localhost:5124/api/admin/customers/4/reject
+
+### 2.8 Get Pending Vehicles Awaiting Approval
+GET http://localhost:5124/api/admin/cars/pending
+
+### 2.9 Approve Vehicle (Sets Status = Approved / Available)
+PUT http://localhost:5124/api/admin/cars/1/approve
+
+### 2.10 Reject Vehicle
+PUT http://localhost:5124/api/admin/cars/1/reject
+
+### 2.11 Get All Users (Admin)
+GET http://localhost:5124/api/admin/users
+
+### 2.12 Get All Bookings (Admin)
+GET http://localhost:5124/api/admin/bookings
+
+### 2.13 Update Booking Status (Admin) (Pending=1, Confirmed=2, Completed=3, Cancelled=4)
+PUT http://localhost:5124/api/admin/bookings/1/status
+Content-Type: application/json
+
+{
+  "status": 3
+}
+
+### 2.14 Cancel Booking (Admin)
+PUT http://localhost:5124/api/admin/bookings/1/cancel
+
+
+###############################################################################
+# 3. CARS / VEHICLES CONTROLLER (/api/cars)
+###############################################################################
+
+### 3.1 Public/Customer: View Approved & Available Cars
+GET http://localhost:5124/api/cars?location=Downtown Hub&type=SUV
+
+### 3.2 Public/Customer: View Single Car Details
+GET http://localhost:5124/api/cars/1
+
+### 3.3 Owner: View My Listed Vehicles (Requires Owner Role)
+GET http://localhost:5124/api/cars/my
+
+### 3.4 Owner: Add Vehicle (Status will be Pending until Admin approves)
+POST http://localhost:5124/api/cars
+Content-Type: application/json
+
+{
+  "brand": "Kia",
+  "model": "Seltos GTX+",
+  "year": 2024,
+  "licensePlate": "GJ05-ST-9988",
+  "vehicleType": 4,
+  "seatingCapacity": 5,
+  "fuelType": 2,
+  "transmission": 2,
+  "hourlyRate": 290.00,
+  "dailyRate": 3600.00,
+  "pickupLocation": "Surat Airport",
+  "imageUrl": "/images/vehicles/seltos.png"
+}
+
+### 3.5 Owner: Update Own Vehicle (Cannot edit other owner's car)
+PUT http://localhost:5124/api/cars/1
+Content-Type: application/json
+
+{
+  "brand": "Royal Enfield",
+  "model": "Classic 350 Reborn",
+  "year": 2024,
+  "licensePlate": "MH12-BK-1111",
+  "vehicleType": 1,
+  "seatingCapacity": 2,
+  "fuelType": 1,
+  "transmission": 1,
+  "hourlyRate": 80.00,
+  "dailyRate": 700.00,
+  "pickupLocation": "Downtown Hub",
+  "imageUrl": "/images/vehicles/re_classic.png"
+}
+
+### 3.6 Owner: Toggle Vehicle Availability
+PUT http://localhost:5124/api/cars/1/availability
+Content-Type: application/json
+
+{
+  "isAvailable": true
+}
+
+### 3.7 Owner: Toggle Vehicle Maintenance
+PUT http://localhost:5124/api/cars/1/maintenance
+Content-Type: application/json
+
+{
+  "isUnderMaintenance": false
+}
+
+### 3.8 Owner: Delete/Deactivate Own Car
+DELETE http://localhost:5124/api/cars/1
+
+### 3.9 Customer: Rule-Based Recommendations
+GET http://localhost:5124/api/cars/recommended?passengers=4&budget=4000&durationDays=2&preferredType=4
+
+
+###############################################################################
+# 4. BOOKINGS CONTROLLER (/api/bookings)
+###############################################################################
+
+### 4.1 Customer: Create Booking (Must be Verified Customer)
+POST http://localhost:5124/api/bookings
+Content-Type: application/json
+
+{
+  "carId": 1,
+  "rentalType": 2,
+  "pickupDateTime": "2026-10-01T10:00:00Z",
+  "returnDateTime": "2026-10-03T10:00:00Z",
+  "pickupLocation": "Downtown Hub",
+  "promoCode": "WELCOME20"
+}
+
+### 4.2 Customer: View My Bookings
+GET http://localhost:5124/api/bookings/my
+
+### 4.3 Owner: View Bookings on My Vehicles
+GET http://localhost:5124/api/owner/bookings
+
+### 4.4 Owner: View Single Booking on My Vehicle
+GET http://localhost:5124/api/owner/bookings/1
+
+### 4.5 Customer: View Single Booking (Protected by IDOR Check)
+GET http://localhost:5124/api/bookings/1
+
+### 4.6 Customer: Cancel Own Booking
+PUT http://localhost:5124/api/bookings/1/cancel
+
+
+###############################################################################
+# 5. PAYMENTS CONTROLLER (/api/payments)
+###############################################################################
+
+### 5.1 Customer: Simulate Payment (UPI=2, Card=1, NetBanking=3, Wallet=4)
+POST http://localhost:5124/api/payments/1/pay
+Content-Type: application/json
+
+{
+  "paymentMethod": 2,
+  "simulateFailure": false
+}
+
+### 5.2 View Payment Record (Customer/Owner/Admin)
+GET http://localhost:5124/api/payments/1
+
+
+###############################################################################
+# 6. REVIEWS CONTROLLER (/api/reviews)
+###############################################################################
+
+### 6.1 Public: View Car Reviews
+GET http://localhost:5124/api/cars/1/reviews
+
+### 6.2 Customer: Submit Review (Only for Completed Booking)
+POST http://localhost:5124/api/reviews
+Content-Type: application/json
+
+{
+  "bookingId": 1,
+  "rating": 5,
+  "comment": "Awesome ride and great mileage!"
+}
+
+### 6.3 Customer: Edit Own Review
+PUT http://localhost:5124/api/reviews/1
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "comment": "Good ride, smooth pickup experience."
+}
+
+### 6.4 Admin / Author: Delete Review
+DELETE http://localhost:5124/api/reviews/1
+
+
+###############################################################################
+# 7. PROMO CODES CONTROLLER (/api/promocodes)
+###############################################################################
+
+### 7.1 Public/Customer: View Active Promo Codes
+GET http://localhost:5124/api/promocodes?onlyActive=true
+
+### 7.2 Admin Only: Create Promo Code
+POST http://localhost:5124/api/promocodes
+Content-Type: application/json
+
+{
+  "code": "FESTIVE30",
+  "discountType": 1,
+  "discountValue": 30,
+  "minBookingAmount": 1500,
+  "validFrom": "2026-09-01T00:00:00Z",
+  "validTo": "2026-12-31T23:59:59Z",
+  "isActive": true
+}
+
+### 7.3 Admin Only: Delete Promo Code
+DELETE http://localhost:5124/api/promocodes/1
+
+
+###############################################################################
+# 8. NOTIFICATIONS CONTROLLER (/api/notifications)
+###############################################################################
+
+### 8.1 View My Notifications
+GET http://localhost:5124/api/notifications
+
+### 8.2 Mark My Notification as Read
+PUT http://localhost:5124/api/notifications/1/read

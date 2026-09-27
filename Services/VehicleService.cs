@@ -61,13 +61,13 @@ public class VehicleService : IVehicleService
             query = query.Where(v => v.Transmission == filter.Transmission.Value);
         }
 
-        // 5. Sorting
+        // 5. Sorting (cast decimal to double for SQLite ORDER BY translation compatibility)
         query = filter.SortBy switch
         {
-            "price_asc" => query.OrderBy(v => v.DailyRate),
-            "price_desc" => query.OrderByDescending(v => v.DailyRate),
-            "rating" => query.OrderByDescending(v => v.AverageRating),
-            _ => query.OrderBy(v => v.DailyRate)
+            "price_asc" => query.OrderBy(v => (double)v.DailyRate),
+            "price_desc" => query.OrderByDescending(v => (double)v.DailyRate),
+            "rating" => query.OrderByDescending(v => (double)v.AverageRating),
+            _ => query.OrderBy(v => (double)v.DailyRate)
         };
 
         return await query.ToListAsync();

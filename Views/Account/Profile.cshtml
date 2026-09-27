@@ -3,38 +3,88 @@
     ViewData["Title"] = "My Profile";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <h3 class="fw-bold mb-3 text-center">My Profile</h3>
+<!-- Atmospheric Lighting Canvas Flares -->
+<div class="ambient-flare flare-primary" style="top: 10%; left: 25%; width: 500px; height: 500px;"></div>
+<div class="ambient-flare flare-secondary" style="bottom: 10%; right: 20%; width: 450px; height: 450px;"></div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold text-muted">Full Name</label>
-                    <div class="form-control-plaintext fw-bold">@Model.FullName</div>
+<div class="container-xl py-5 position-relative" style="z-index: 10;">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-11">
+            <div class="card-glass p-4 p-sm-5 position-relative overflow-hidden shadow-2xl" style="border-radius: var(--radius-3xl); background: linear-gradient(135deg, rgba(22, 27, 42, 0.95) 0%, rgba(37, 42, 57, 0.60) 100%); border: 1px solid var(--border-card);">
+                
+                <!-- Background Grid Lighting Accent -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+
+                <!-- Profile Header & Avatar -->
+                <div class="d-flex align-items-center gap-4 mb-4 position-relative" style="z-index: 2;">
+                    <div class="position-relative">
+                        <div class="avatar-placeholder" style="width: 72px; height: 72px; font-size: 1.75rem; border-radius: 50%; box-shadow: var(--shadow-glow);">
+                            @(Model.FullName.Length > 0 ? Model.FullName[0].ToString().ToUpper() : "U")
+                        </div>
+                        <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-2 border-dark rounded-circle" style="width: 16px; height: 16px;"></span>
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h2 class="headline-md text-white mb-0">@Model.FullName</h2>
+                            <span class="badge-pill badge-primary">Voyager</span>
+                        </div>
+                        <div class="text-muted small">@Model.Email</div>
+                        <div class="label-sm mt-1" style="color: var(--tertiary);">Member since @Model.CreatedAt.ToString("MMMM yyyy")</div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold text-muted">Email</label>
-                    <div class="form-control-plaintext">@Model.Email</div>
+                <!-- User Details Grid -->
+                <div class="row g-3 my-2 position-relative" style="z-index: 2;">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                            <span class="label-sm text-muted d-block text-uppercase mb-1">Mobile Number</span>
+                            <div class="fw-semibold text-white d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--primary);">phone</span>
+                                <span>@Model.MobileNumber</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                            <span class="label-sm text-muted d-block text-uppercase mb-1">Driving License</span>
+                            <div class="fw-semibold text-white d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--tertiary);">credit_card</span>
+                                <span>@(string.IsNullOrEmpty(Model.DrivingLicenseNumber) ? "Not provided" : Model.DrivingLicenseNumber)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="p-3 rounded-3 d-flex align-items-center justify-content-between" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25);">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="material-symbols-outlined text-success" style="font-size: 1.5rem;">verified_user</span>
+                                <div>
+                                    <div class="fw-bold text-white" style="font-size: 0.9375rem;">Identity Verified</div>
+                                    <div class="text-muted small">Eligible for instant keyless dispatch across all hubs.</div>
+                                </div>
+                            </div>
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1 rounded-pill small">Active</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold text-muted">Mobile Number</label>
-                    <div class="form-control-plaintext">@Model.MobileNumber</div>
-                </div>
+                <!-- Actions Footer -->
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top position-relative" style="z-index: 2; border-color: var(--border-subtle) !important;">
+                    <a asp-controller="Home" asp-action="Index" class="btn-ghost-dark py-2 px-3">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        <span>Back to Fleet</span>
+                    </a>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold text-muted">Driving License</label>
-                    <div class="form-control-plaintext">@(string.IsNullOrEmpty(Model.DrivingLicenseNumber) ? "Not provided" : Model.DrivingLicenseNumber)</div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Home</a>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 py-2 small fw-semibold d-inline-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
+                            <span>Sign Out</span>
+                        </button>
                     </form>
                 </div>
+
             </div>
         </div>
     </div>

@@ -1,72 +1,279 @@
+@using Microsoft.AspNetCore.Identity
+@using wad_project.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DriveEase</title>
+    <meta name="referrer" content="no-referrer" />
+    <title>@ViewData["Title"] - DriveEase | Self-Drive Luxury Car Rental</title>
+    
+    <!-- Design System Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <!-- Core CSS Framework & DriveEase Theme -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/driveease.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">DriveEase</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    <!-- Top Fixed Glassmorphic Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <!-- Brand Logo & City Picker -->
+            <div class="d-flex align-items-center gap-3">
+                <a class="brand-link" asp-controller="Home" asp-action="Index">
+                    <div class="brand-icon-box">
+                        <span class="material-symbols-outlined" style="font-size: 1.5rem;">directions_car</span>
+                    </div>
+                    <span>DriveEase<span style="color: var(--primary);">.</span></span>
+                </a>
 
-                    <ul class="navbar-nav">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile">
-                                    Hello, @User.Identity.Name!
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-link nav-link text-dark">Logout</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
+                <div class="d-none d-lg-block" style="width: 1px; height: 24px; background: var(--border-subtle);"></div>
+
+                <div class="d-none d-lg-flex align-items-center">
+                    <button class="location-pill" type="button">
+                        <span class="material-symbols-outlined" style="color: var(--primary); font-size: 1rem;">near_me</span>
+                        <span>Surat (ST)</span>
+                        <span class="material-symbols-outlined" style="color: var(--text-muted); font-size: 1rem;">expand_more</span>
+                    </button>
                 </div>
             </div>
-        </nav>
+
+            <!-- Desktop Floating Nav Pills -->
+            <nav class="desktop-nav-pills nav-pill-container d-none d-xl-flex">
+                <a class="nav-pill-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")" 
+                   asp-controller="Home" asp-action="Index">Home</a>
+                <a class="nav-pill-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Cars" ? "active" : "")" 
+                   asp-controller="Home" asp-action="Index" asp-fragment="explore-fleet">Explore Cars</a>
+                <a class="nav-pill-link" href="#hourly-rental">Hourly Rental</a>
+                <a class="nav-pill-link" href="#how-it-works">How It Works</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="nav-pill-link" href="/api/admin/dashboard" target="_blank" style="color: var(--primary-light);">
+                        <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">admin_panel_settings</span>Admin
+                    </a>
+                }
+            </nav>
+
+            <!-- Right Controls (Search, Notifications, Profile) -->
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+                <!-- Quick Search -->
+                <button class="search-quick-btn d-none d-md-inline-flex" type="button" onclick="document.getElementById('fleetSearchSection')?.scrollIntoView({behavior:'smooth'})">
+                    <span class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">search</span>
+                        <span>Search cars...</span>
+                    </span>
+                    <kbd>⌘K</kbd>
+                </button>
+
+                <!-- Notifications Button -->
+                <button class="btn-icon-round position-relative" type="button" aria-label="Notifications">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="position-absolute" style="top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 8px var(--primary);"></span>
+                </button>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var currentUser = await UserManager.GetUserAsync(User);
+                    var displayName = currentUser?.FullName ?? User.Identity.Name ?? "User";
+                    var userRole = User.IsInRole("Admin") ? "Admin" : (User.IsInRole("Owner") ? "Owner" : "Customer");
+
+                    <!-- Authenticated User Profile Pill -->
+                    <div class="position-relative">
+                        <div class="user-profile-pill" id="userProfileDropdownTrigger">
+                            <div class="avatar-placeholder">
+                                @(displayName.Length > 0 ? displayName[0].ToString().ToUpper() : "U")
+                            </div>
+                            <div class="d-none d-sm-flex flex-column text-start">
+                                <span class="label-md text-truncate" style="max-width: 110px; color: var(--text-primary); line-height: 1.1;">@displayName</span>
+                                <span class="label-sm" style="color: var(--primary-light); line-height: 1.1;">@userRole</span>
+                            </div>
+                            <span class="material-symbols-outlined" style="color: var(--text-muted); font-size: 1.1rem;">expand_more</span>
+                        </div>
+
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu-dark dropdown-menu dropdown-menu-end position-absolute" id="userProfileDropdownMenu">
+                            <div class="px-3 py-2 border-bottom" style="border-color: var(--border-subtle) !important;">
+                                <div class="fw-bold text-white">@displayName</div>
+                                <div class="small" style="color: var(--text-muted);">@User.Identity.Name</div>
+                            </div>
+                            <a class="dropdown-item-dark mt-1" asp-controller="Account" asp-action="Profile">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--primary);">person</span>
+                                My Profile
+                            </a>
+                            <a class="dropdown-item-dark" href="#my-bookings">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--tertiary);">directions_car</span>
+                                My Bookings
+                            </a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="dropdown-item-dark" href="/swagger" target="_blank">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--warning);">api</span>
+                                    API Swagger
+                                </a>
+                            }
+                            <div class="dropdown-divider my-1" style="border-color: var(--border-subtle);"></div>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-0">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item-dark text-danger w-100 text-start border-0 bg-transparent">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
+                                    Sign Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Guest Actions -->
+                    <a class="btn-ghost-dark d-none d-sm-inline-flex" asp-controller="Account" asp-action="Login">
+                        Sign In
+                    </a>
+                    <a class="btn-primary-gradient" asp-controller="Account" asp-action="Register">
+                        <span>Get Started</span>
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_forward</span>
+                    </a>
+                }
+
+                <!-- Mobile Navigation Hamburger -->
+                <button class="btn-icon-round mobile-nav-toggle" id="mobileNavToggle" type="button" aria-label="Toggle menu">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+            </div>
+        </div>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <!-- Mobile Drawer Navigation -->
+    <div class="mobile-drawer" id="mobileDrawer">
+        <a class="mobile-nav-link active" asp-controller="Home" asp-action="Index">
+            <span class="material-symbols-outlined" style="color: var(--primary);">home</span>
+            Home
+        </a>
+        <a class="mobile-nav-link" asp-controller="Home" asp-action="Index" asp-fragment="explore-fleet">
+            <span class="material-symbols-outlined" style="color: var(--tertiary);">directions_car</span>
+            Explore Cars
+        </a>
+        <a class="mobile-nav-link" href="#hourly-rental">
+            <span class="material-symbols-outlined" style="color: var(--secondary);">schedule</span>
+            Hourly Rental
+        </a>
+        <a class="mobile-nav-link" href="#how-it-works">
+            <span class="material-symbols-outlined" style="color: var(--warning);">info</span>
+            How It Works
+        </a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="mobile-nav-link" asp-controller="Account" asp-action="Profile">
+                <span class="material-symbols-outlined" style="color: var(--success);">person</span>
+                My Profile
+            </a>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="mt-2">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-primary-gradient w-100 justify-content-center">
+                    <span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </button>
+            </form>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-2 mt-3">
+                <a class="btn-ghost-dark w-100 justify-content-center" asp-controller="Account" asp-action="Login">Sign In</a>
+                <a class="btn-primary-gradient w-100 justify-content-center" asp-controller="Account" asp-action="Register">Create Account</a>
+            </div>
+        }
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - DriveEase - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- Main App Body -->
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Global Luxury Automotive Footer -->
+    <footer class="footer-dark">
+        <div class="container-xl">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <a class="brand-link mb-3" asp-controller="Home" asp-action="Index">
+                        <div class="brand-icon-box">
+                            <span class="material-symbols-outlined">directions_car</span>
+                        </div>
+                        <span>DriveEase<span style="color: var(--primary);">.</span></span>
+                    </a>
+                    <p style="color: var(--text-muted); max-width: 340px; font-size: 0.875rem;">
+                        Premium self-drive vehicle rentals across major Indian cities. Zero deposit options, verified luxury & electric fleet, 24/7 on-road support.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <span class="badge-pill badge-primary">
+                            <span class="material-symbols-outlined" style="font-size: 0.8rem;">verified</span> 100% Insured Fleet
+                        </span>
+                        <span class="badge-pill badge-success">
+                            <span class="material-symbols-outlined" style="font-size: 0.8rem;">key</span> Instant Keyless Unlock
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="font-headline mb-3 text-white">Vehicles</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small" style="color: var(--text-muted);">
+                        <li><a href="#fleet" class="text-decoration-none text-reset hover-primary">SUVs & 4x4s</a></li>
+                        <li><a href="#fleet" class="text-decoration-none text-reset hover-primary">Luxury Sedans</a></li>
+                        <li><a href="#fleet" class="text-decoration-none text-reset hover-primary">Electric Vehicles</a></li>
+                        <li><a href="#fleet" class="text-decoration-none text-reset hover-primary">Hatchbacks</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="font-headline mb-3 text-white">Company</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small" style="color: var(--text-muted);">
+                        <li><a href="#how-it-works" class="text-decoration-none text-reset hover-primary">How It Works</a></li>
+                        <li><a href="#pricing" class="text-decoration-none text-reset hover-primary">Pricing & Plans</a></li>
+                        <li><a href="#safety" class="text-decoration-none text-reset hover-primary">Safety Standards</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-reset hover-primary">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <h6 class="font-headline mb-3 text-white">24/7 Roadside Assistance</h6>
+                    <div class="p-3 rounded-3" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="btn-icon-round" style="background: var(--surface-high); color: var(--primary);">
+                                <span class="material-symbols-outlined">support_agent</span>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white">+91 1800-DRIVE-EASE</div>
+                                <div class="small" style="color: var(--text-muted);">Toll-Free Emergency Dispatch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-top d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 small" style="border-color: var(--border-subtle) !important;">
+                <div>
+                    &copy; @DateTime.UtcNow.Year DriveEase Technologies Inc. All rights reserved.
+                </div>
+                <div class="d-flex gap-4">
+                    <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-reset">Privacy Policy</a>
+                    <a href="#terms" class="text-decoration-none text-reset">Terms of Service</a>
+                    <a href="#security" class="text-decoration-none text-reset">Security Compliance</a>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Core JavaScript Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/driveease.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

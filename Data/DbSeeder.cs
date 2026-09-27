@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using wad_project.Models;
 
@@ -5,9 +6,19 @@ namespace wad_project.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
     {
-        // 1. Seed Users (1 Admin, 2 Customers) if table is empty
+        // 0. Seed Identity Roles
+        string[] roles = { "Admin", "Customer", "Owner" };
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+
+        // 1. Seed Users (1 Admin, 1 Owner, 2 Customers) if table is empty
         if (!await context.Users.AnyAsync())
         {
             var admin = new User
@@ -16,10 +27,24 @@ public static class DbSeeder
                 Email = "admin@driveease.com",
                 MobileNumber = "9876543210",
                 DrivingLicenseNumber = "DL-ADMIN-0001",
-                Password = "1234", // Simple password without hashing
-                Role = UserRole.Administrator,
+                Password = "1234",
+                Role = UserRole.Admin,
+                VerificationStatus = VerificationStatus.Verified,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddMonths(-3)
+            };
+
+            var owner = new User
+            {
+                FullName = "Vikram Singh (Owner)",
+                Email = "owner@driveease.com",
+                MobileNumber = "9812345678",
+                DrivingLicenseNumber = "DL-OWNER-9999",
+                Password = "1234",
+                Role = UserRole.Owner,
+                VerificationStatus = VerificationStatus.Verified,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow.AddMonths(-2)
             };
 
             var customer1 = new User
@@ -28,8 +53,9 @@ public static class DbSeeder
                 Email = "rahul@gmail.com",
                 MobileNumber = "9823456780",
                 DrivingLicenseNumber = "MH12-2021-00892",
-                Password = "1234", // Simple password without hashing
+                Password = "1234",
                 Role = UserRole.Customer,
+                VerificationStatus = VerificationStatus.Verified,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddMonths(-2)
             };
@@ -40,14 +66,21 @@ public static class DbSeeder
                 Email = "priya@gmail.com",
                 MobileNumber = "9871234560",
                 DrivingLicenseNumber = "DL04-2022-00431",
-                Password = "1234", // Simple password without hashing
+                Password = "1234",
                 Role = UserRole.Customer,
+                VerificationStatus = VerificationStatus.Pending,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddMonths(-1)
             };
 
-            await context.Users.AddRangeAsync(admin, customer1, customer2);
+            await context.Users.AddRangeAsync(admin, owner, customer1, customer2);
             await context.SaveChangesAsync();
+
+            // Also ensure corresponding Identity ApplicationUsers exist
+            await EnsureIdentityUser(userManager, admin.Email, admin.FullName, admin.MobileNumber, admin.DrivingLicenseNumber, "Admin", VerificationStatus.Verified);
+            await EnsureIdentityUser(userManager, owner.Email, owner.FullName, owner.MobileNumber, owner.DrivingLicenseNumber, "Owner", VerificationStatus.Verified);
+            await EnsureIdentityUser(userManager, customer1.Email, customer1.FullName, customer1.MobileNumber, customer1.DrivingLicenseNumber, "Customer", VerificationStatus.Verified);
+            await EnsureIdentityUser(userManager, customer2.Email, customer2.FullName, customer2.MobileNumber, customer2.DrivingLicenseNumber, "Customer", VerificationStatus.Pending);
         }
 
         // 2. Seed Vehicles if none exist
@@ -256,6 +289,37 @@ public static class DbSeeder
 
             await context.PricingRules.AddAsync(weekendSurge);
             await context.SaveChangesAsync();
+        }
+    }
+
+    private static async Task EnsureIdentityUser(
+        UserManager<ApplicationUser> userManager,
+        string email,
+        string fullName,
+        string mobileNumber,
+        string? drivingLicense,
+        string role,
+        VerificationStatus verificationStatus)
+    {
+        var identityUser = await userManager.FindByEmailAsync(email);
+        if (identityUser == null)
+        {
+            identityUser = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                FullName = fullName,
+                PhoneNumber = mobileNumber,
+                DrivingLicenseNumber = drivingLicense,
+                VerificationStatus = verificationStatus,
+                IsActive = true
+            };
+            await userManager.CreateAsync(identityUser, "1234");
+        }
+
+        if (!await userManager.IsInRoleAsync(identityUser, role))
+        {
+            await userManager.AddToRoleAsync(identityUser, role);
         }
     }
 }

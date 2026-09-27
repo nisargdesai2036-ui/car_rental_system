@@ -37,8 +37,9 @@ public class UserService : IUserService
             Email = email,
             MobileNumber = phone,
             DrivingLicenseNumber = string.IsNullOrWhiteSpace(model.DrivingLicenseNumber) ? null : model.DrivingLicenseNumber.Trim().ToUpperInvariant(),
-            Password = model.Password, // Simple authentication without hashing
+            Password = model.Password,
             Role = UserRole.Customer,
+            VerificationStatus = VerificationStatus.Pending,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -46,7 +47,43 @@ public class UserService : IUserService
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
-        return (true, "Registration successful.", newUser);
+        return (true, "Customer registration successful. Your verification is pending approval.", newUser);
+    }
+
+    public async Task<(bool Success, string Message, User? User)> RegisterOwnerAsync(RegisterViewModel model)
+    {
+        var email = model.Email.Trim().ToLowerInvariant();
+        var phone = model.MobileNumber.Trim();
+
+        // Check for duplicate email
+        if (await _context.Users.AnyAsync(u => u.Email.ToLower() == email))
+        {
+            return (false, "An account with this email address already exists.", null);
+        }
+
+        // Check for duplicate mobile number
+        if (await _context.Users.AnyAsync(u => u.MobileNumber == phone))
+        {
+            return (false, "An account with this mobile number already exists.", null);
+        }
+
+        var newOwner = new User
+        {
+            FullName = model.FullName.Trim(),
+            Email = email,
+            MobileNumber = phone,
+            DrivingLicenseNumber = string.IsNullOrWhiteSpace(model.DrivingLicenseNumber) ? null : model.DrivingLicenseNumber.Trim().ToUpperInvariant(),
+            Password = model.Password,
+            Role = UserRole.Owner,
+            VerificationStatus = VerificationStatus.Pending,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Users.AddAsync(newOwner);
+        await _context.SaveChangesAsync();
+
+        return (true, "Owner registration successful. Your account is pending admin verification.", newOwner);
     }
 
     public async Task<(bool Success, string Message, User? User)> LoginAsync(LoginViewModel model)

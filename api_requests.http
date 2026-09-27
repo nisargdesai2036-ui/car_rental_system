@@ -1,0 +1,329 @@
+# DriveEase Car Rental - REST Client / HTTP Requests
+# Compatible with VS Code REST Client extension, Postman import, and curl
+@baseUrl = http://localhost:5124
+@contentType = application/json
+
+###############################################################################
+# 1. AUTHENTICATION CONTROLLER (/api/auth)
+###############################################################################
+
+### 1.1 Register Customer
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "fullName": "John Doe",
+  "email": "johndoe@example.com",
+  "password": "Password@123",
+  "phoneNumber": "+919876543210",
+  "drivingLicenseNumber": "DL-1420110012345",
+  "address": "123 Green Avenue, Surat, Gujarat",
+  "role": "Customer"
+}
+
+### 1.2 Register Admin
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "fullName": "DriveEase Admin",
+  "email": "superadmin@driveease.com",
+  "password": "Admin@123",
+  "phoneNumber": "+919999988888",
+  "drivingLicenseNumber": "DL-ADMIN-001",
+  "address": "Admin HQ, Surat",
+  "role": "Admin"
+}
+
+### 1.3 Login Customer
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "customer@driveease.com",
+  "password": "Customer@123",
+  "rememberMe": true
+}
+
+### 1.4 Login Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@driveease.com",
+  "password": "Admin@123",
+  "rememberMe": true
+}
+
+### 1.5 Get Current Logged-in User Profile
+GET {{baseUrl}}/api/auth/me
+
+### 1.6 Update User Profile
+PUT {{baseUrl}}/api/auth/profile
+Content-Type: {{contentType}}
+
+{
+  "fullName": "John Updated Doe",
+  "phoneNumber": "+919123456789",
+  "drivingLicenseNumber": "DL-UPDATED-9999",
+  "address": "456 City Light, Surat, Gujarat"
+}
+
+### 1.7 Logout
+POST {{baseUrl}}/api/auth/logout
+
+
+###############################################################################
+# 2. CARS / VEHICLES CONTROLLER (/api/cars)
+###############################################################################
+
+### 2.1 Get All Available Cars (With Filters)
+GET {{baseUrl}}/api/cars?location=Surat&type=SUV&minPrice=500&maxPrice=5000&search=Creta
+
+### 2.2 Get Car by ID (Includes Average Rating & Reviews)
+GET {{baseUrl}}/api/cars/1
+
+### 2.3 Add New Car (Admin)
+POST {{baseUrl}}/api/cars
+Content-Type: {{contentType}}
+
+{
+  "name": "Hyundai Creta 2024",
+  "brand": "Hyundai",
+  "model": "Creta SX(O)",
+  "year": 2024,
+  "licensePlate": "GJ05CD1234",
+  "type": "SUV",
+  "seats": 5,
+  "transmission": "Automatic",
+  "fuelType": "Petrol",
+  "hourlyRate": 150.00,
+  "dailyRate": 2500.00,
+  "location": "Surat",
+  "imageUrl": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341"
+}
+
+### 2.4 Update Car (Admin)
+PUT {{baseUrl}}/api/cars/1
+Content-Type: {{contentType}}
+
+{
+  "name": "Hyundai Creta 2024 Facelift",
+  "brand": "Hyundai",
+  "model": "Creta SX",
+  "year": 2024,
+  "licensePlate": "GJ05CD1234",
+  "type": "SUV",
+  "seats": 5,
+  "transmission": "Automatic",
+  "fuelType": "Diesel",
+  "hourlyRate": 160.00,
+  "dailyRate": 2600.00,
+  "location": "Surat",
+  "imageUrl": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341"
+}
+
+### 2.5 Set Car Availability (Admin)
+PUT {{baseUrl}}/api/cars/1/availability
+Content-Type: {{contentType}}
+
+{
+  "isAvailable": true
+}
+
+### 2.6 Set Car Maintenance Status (Admin)
+PUT {{baseUrl}}/api/cars/1/maintenance
+Content-Type: {{contentType}}
+
+{
+  "isUnderMaintenance": false
+}
+
+### 2.7 Delete/Deactivate Car (Admin)
+DELETE {{baseUrl}}/api/cars/1
+
+### 2.8 Get Smart Recommended Cars (Rule-Based)
+GET {{baseUrl}}/api/cars/recommended?carType=SUV&seats=5&maxDailyBudget=3000&minRating=4.0
+
+
+###############################################################################
+# 3. BOOKINGS CONTROLLER (/api/bookings)
+###############################################################################
+
+### 3.1 Create Daily Booking (With Promo Code)
+POST {{baseUrl}}/api/bookings
+Content-Type: {{contentType}}
+
+{
+  "carId": 1,
+  "bookingType": "Daily",
+  "pickupDate": "2026-10-01T10:00:00Z",
+  "returnDate": "2026-10-03T10:00:00Z",
+  "pickupLocation": "Surat Airport",
+  "dropoffLocation": "Surat Railway Station",
+  "promoCode": "WELCOME10"
+}
+
+### 3.2 Create Hourly Booking
+POST {{baseUrl}}/api/bookings
+Content-Type: {{contentType}}
+
+{
+  "carId": 1,
+  "bookingType": "Hourly",
+  "pickupDate": "2026-10-05T09:00:00Z",
+  "returnDate": "2026-10-05T17:00:00Z",
+  "pickupLocation": "Adajan, Surat",
+  "dropoffLocation": "Vesu, Surat"
+}
+
+### 3.3 Get Current Customer's Categorized Bookings
+GET {{baseUrl}}/api/bookings/my
+
+### 3.4 Get Booking by ID
+GET {{baseUrl}}/api/bookings/1
+
+### 3.5 Cancel Booking
+PUT {{baseUrl}}/api/bookings/1/cancel
+
+
+###############################################################################
+# 4. PAYMENTS CONTROLLER (/api/payments)
+###############################################################################
+
+### 4.1 Simulate Successful Payment (PaymentMethod: UPI=0, Card=1, NetBanking=2, Cash=3)
+POST {{baseUrl}}/api/payments/1/pay
+Content-Type: {{contentType}}
+
+{
+  "paymentMethod": 0,
+  "simulateFailure": false
+}
+
+### 4.2 Simulate Failed Payment
+POST {{baseUrl}}/api/payments/1/pay
+Content-Type: {{contentType}}
+
+{
+  "paymentMethod": 1,
+  "simulateFailure": true
+}
+
+### 4.3 Get Payment Details for Booking
+GET {{baseUrl}}/api/payments/1
+
+
+###############################################################################
+# 5. PROMO CODES CONTROLLER (/api/promocodes)
+###############################################################################
+
+### 5.1 Get Active Promo Codes
+GET {{baseUrl}}/api/promocodes
+
+### 5.2 Create Promo Code (DiscountType: Percentage=0, FixedAmount=1)
+POST {{baseUrl}}/api/promocodes
+Content-Type: {{contentType}}
+
+{
+  "code": "FESTIVE20",
+  "discountType": 0,
+  "discountValue": 20,
+  "minBookingAmount": 1000,
+  "validFrom": "2026-09-01T00:00:00Z",
+  "validTo": "2026-12-31T23:59:59Z",
+  "isActive": true
+}
+
+### 5.3 Update Promo Code
+PUT {{baseUrl}}/api/promocodes/1
+Content-Type: {{contentType}}
+
+{
+  "code": "FESTIVE25",
+  "discountType": 0,
+  "discountValue": 25,
+  "minBookingAmount": 1200,
+  "validFrom": "2026-09-01T00:00:00Z",
+  "validTo": "2026-12-31T23:59:59Z",
+  "isActive": true
+}
+
+### 5.4 Delete Promo Code
+DELETE {{baseUrl}}/api/promocodes/1
+
+
+###############################################################################
+# 6. REVIEWS & RATINGS CONTROLLER (/api/reviews)
+###############################################################################
+
+### 6.1 Get Reviews for a Car
+GET {{baseUrl}}/api/cars/1/reviews
+
+### 6.2 Submit Review (After Completing Booking)
+POST {{baseUrl}}/api/reviews
+Content-Type: {{contentType}}
+
+{
+  "bookingId": 1,
+  "rating": 5,
+  "comment": "Excellent car condition, smooth pickup and very comfortable drive!"
+}
+
+### 6.3 Update Review
+PUT {{baseUrl}}/api/reviews/1
+Content-Type: {{contentType}}
+
+{
+  "rating": 4,
+  "comment": "Good ride, clean car, recommended."
+}
+
+### 6.4 Delete Review
+DELETE {{baseUrl}}/api/reviews/1
+
+
+###############################################################################
+# 7. NOTIFICATIONS CONTROLLER (/api/notifications)
+###############################################################################
+
+### 7.1 Get Notifications
+GET {{baseUrl}}/api/notifications
+
+### 7.2 Mark Notification as Read
+PUT {{baseUrl}}/api/notifications/1/read
+
+
+###############################################################################
+# 8. ADMIN CONTROLLER (/api/admin)
+###############################################################################
+
+### 8.1 Admin Dashboard Summary Statistics
+GET {{baseUrl}}/api/admin/dashboard
+
+### 8.2 Get All Registered Users
+GET {{baseUrl}}/api/admin/users
+
+### 8.3 Get User by ID
+GET {{baseUrl}}/api/admin/users/1
+
+### 8.4 Activate or Deactivate User
+PUT {{baseUrl}}/api/admin/users/1/status
+Content-Type: {{contentType}}
+
+{
+  "isActive": false
+}
+
+### 8.5 Get All Bookings (Admin View)
+GET {{baseUrl}}/api/admin/bookings
+
+### 8.6 Get Single Booking (Admin View)
+GET {{baseUrl}}/api/admin/bookings/1
+
+### 8.7 Update Booking Status (Pending=0, Confirmed=1, Active=2, Completed=3, Cancelled=4)
+PUT {{baseUrl}}/api/admin/bookings/1/status
+Content-Type: {{contentType}}
+
+{
+  "status": 3
+}

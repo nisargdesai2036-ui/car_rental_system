@@ -3,8 +3,15 @@ namespace wad_project.Models;
 public enum UserRole
 {
     Customer = 1,
-    Administrator = 2,
-    VehicleProvider = 3
+    Admin = 2,
+    Owner = 3
+}
+
+public enum VerificationStatus
+{
+    Pending = 1,
+    Verified = 2,
+    Rejected = 3
 }
 
 public enum RentalType
@@ -15,7 +22,7 @@ public enum RentalType
 
 public enum VehicleType
 {
-    Bike = 1,       // Added Bike / Two-wheeler option
+    Bike = 1,       // Bike / Two-wheeler option
     Hatchback = 2,
     Sedan = 3,
     SUV = 4,
@@ -37,9 +44,14 @@ public enum TransmissionType
 
 public enum VehicleStatus
 {
-    Available = 1,
-    Booked = 2,
-    UnderMaintenance = 3
+    Pending = 1,
+    Approved = 2,
+    Available = 2, // alias for Approved
+    Booked = 3,
+    UnderMaintenance = 4,
+    Maintenance = 4, // alias
+    Rejected = 5,
+    Inactive = 6
 }
 
 public enum BookingStatus

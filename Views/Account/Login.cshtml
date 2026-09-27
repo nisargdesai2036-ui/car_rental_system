@@ -1,38 +1,126 @@
 @model wad_project.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <h3 class="fw-bold mb-3 text-center">Sign In</h3>
+<!-- Atmospheric Lighting Canvas Flares -->
+<div class="ambient-flare flare-primary" style="top: 10%; left: 30%; width: 500px; height: 500px;"></div>
+<div class="ambient-flare flare-secondary" style="bottom: 10%; right: 20%; width: 450px; height: 450px;"></div>
 
-                <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+<div class="container-xl py-5 position-relative" style="z-index: 10; min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center;">
+    <div class="row justify-content-center w-100">
+        <div class="col-lg-5 col-md-8 col-sm-11">
+            <div class="card-glass p-4 p-sm-5 position-relative overflow-hidden shadow-2xl" style="border-radius: var(--radius-3xl); background: linear-gradient(135deg, rgba(22, 27, 42, 0.95) 0%, rgba(37, 42, 57, 0.60) 100%); border: 1px solid var(--border-card);">
+                
+                <!-- Background Lighting Accent -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+
+                <!-- Brand Header Pill -->
+                <div class="text-center position-relative mb-4" style="z-index: 2;">
+                    <a asp-controller="Home" asp-action="Index" class="d-inline-flex align-items-center gap-2 mb-3 text-decoration-none">
+                        <div class="brand-icon-box" style="width: 42px; height: 42px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.5rem;">directions_car</span>
+                        </div>
+                        <span class="headline-sm text-white fw-bold">DriveEase<span style="color: var(--primary);">.</span></span>
+                    </a>
+                    <h1 class="headline-lg text-white mb-1">Welcome Back</h1>
+                    <p class="text-muted small mb-0">Sign in to manage your luxury self-drive reservations and profile.</p>
+                </div>
+
+                <!-- Form Section -->
+                <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" class="position-relative" style="z-index: 2;" autocomplete="off">
                     <input type="hidden" asp-for="ReturnUrl" />
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <!-- Decoy inputs to trap Chrome / Edge aggressive autofill engines -->
+                    <input type="text" name="fakeusernameremembered" style="display:none" tabindex="-1" autocomplete="off" />
+                    <input type="password" name="fakepasswordremembered" style="display:none" tabindex="-1" autocomplete="new-password" />
 
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+                    {
+                        <div class="alert alert-danger py-2 px-3 mb-3 rounded-3 small d-flex align-items-center gap-2" role="alert" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">error</span>
+                            <div asp-validation-summary="ModelOnly" class="mb-0"></div>
+                        </div>
+                    }
+
+                    <!-- Email / Mobile Input -->
                     <div class="mb-3">
-                        <label asp-for="EmailOrMobile" class="form-label fw-semibold"></label>
-                        <input asp-for="EmailOrMobile" class="form-control" placeholder="Email or Mobile" autofocus />
-                        <span asp-validation-for="EmailOrMobile" class="text-danger small"></span>
+                        <label for="EmailOrMobile" class="form-label d-block mb-1 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Email or Mobile Number</label>
+                        <div class="position-relative">
+                            <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">alternate_email</span>
+                            </div>
+                            <input asp-for="EmailOrMobile" 
+                                   id="EmailOrMobile"
+                                   name="EmailOrMobile"
+                                   value="@(Model?.EmailOrMobile ?? "")"
+                                   class="form-control text-white shadow-none ps-5 py-2" 
+                                   style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                   placeholder="Enter email or mobile number" 
+                                   autocomplete="off"
+                                   autofocus 
+                                   required />
+                        </div>
+                        <span asp-validation-for="EmailOrMobile" class="text-danger small mt-1 d-block"></span>
                     </div>
 
+                    <!-- Password Input with Reveal Button -->
                     <div class="mb-4">
-                        <label asp-for="Password" class="form-label fw-semibold"></label>
-                        <input asp-for="Password" class="form-control" type="password" placeholder="Password" />
-                        <span asp-validation-for="Password" class="text-danger small"></span>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="passwordInput" class="form-label mb-0 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Password</label>
+                        </div>
+                        <div class="position-relative">
+                            <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">lock</span>
+                            </div>
+                            <input asp-for="Password" 
+                                   id="passwordInput"
+                                   name="Password"
+                                   type="password" 
+                                   value=""
+                                   class="form-control text-white shadow-none ps-5 pe-5 py-2" 
+                                   style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                   placeholder="Enter password" 
+                                   autocomplete="new-password"
+                                   required />
+                            <button type="button" 
+                                    class="btn position-absolute top-50 end-0 translate-middle-y pe-3 border-0 shadow-none d-flex align-items-center" 
+                                    style="color: var(--text-muted); z-index: 5;"
+                                    onclick="togglePasswordVisibility()" 
+                                    tabindex="-1">
+                                <span class="material-symbols-outlined" id="togglePasswordIcon" style="font-size: 1.15rem;">visibility</span>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
                     </div>
 
-                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
-                        Sign In
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary-gradient w-100 py-3 justify-content-center mb-3">
+                        <span>Sign In to DriveEase</span>
+                        <span class="material-symbols-outlined">login</span>
                     </button>
 
-                    <div class="text-center mt-3 small">
-                        Don't have an account? <a asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]">Register</a>
+                    <!-- Register Navigation -->
+                    <div class="text-center pt-2 border-top" style="border-color: var(--border-subtle) !important;">
+                        <span class="text-muted small">New to DriveEase?</span>
+                        <a asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="fw-semibold ms-1 text-decoration-none" style="color: var(--primary-light);">
+                            Create an Account
+                        </a>
                     </div>
                 </form>
+
+                <!-- Trust Chips -->
+                <div class="d-flex justify-content-center gap-3 mt-4 pt-3 text-center position-relative" style="z-index: 2;">
+                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--tertiary);">shield</span>
+                        <span>256-Bit SSL Encrypted</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--tertiary);">key</span>
+                        <span>Instant Keyless Entry</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -40,4 +128,31 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Clear any browser-forced auto-filled values on page load if not deliberately submitted
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var emailInput = document.getElementById('EmailOrMobile');
+                var passInput = document.getElementById('passwordInput');
+                if (emailInput && !emailInput.value) {
+                    emailInput.value = '';
+                }
+                if (passInput) {
+                    passInput.value = '';
+                }
+            }, 50);
+        });
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('passwordInput');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                toggleIcon.innerText = 'visibility_off';
+            } else {
+                pwdInput.type = 'password';
+                toggleIcon.innerText = 'visibility';
+            }
+        }
+    </script>
 }

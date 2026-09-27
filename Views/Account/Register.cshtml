@@ -1,61 +1,222 @@
 @model wad_project.ViewModels.RegisterViewModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <h3 class="fw-bold mb-3 text-center">Create Account</h3>
+<!-- Atmospheric Lighting Canvas Flares -->
+<div class="ambient-flare flare-primary" style="top: 5%; left: 20%; width: 550px; height: 550px;"></div>
+<div class="ambient-flare flare-secondary" style="bottom: 5%; right: 15%; width: 500px; height: 500px;"></div>
 
-                <form asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="container-xl py-5 position-relative" style="z-index: 10; min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center;">
+    <div class="row justify-content-center w-100">
+        <div class="col-lg-7 col-md-9 col-sm-11">
+            <div class="card-glass p-4 p-sm-5 position-relative overflow-hidden shadow-2xl" style="border-radius: var(--radius-3xl); background: linear-gradient(135deg, rgba(22, 27, 42, 0.95) 0%, rgba(37, 42, 57, 0.60) 100%); border: 1px solid var(--border-card);">
+                
+                <!-- Background Lighting Accent -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
 
-                    <div class="mb-3">
-                        <label asp-for="FullName" class="form-label fw-semibold"></label>
-                        <input asp-for="FullName" class="form-control" placeholder="Your Full Name" />
-                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                <!-- Brand Header Pill -->
+                <div class="text-center position-relative mb-4" style="z-index: 2;">
+                    <a asp-controller="Home" asp-action="Index" class="d-inline-flex align-items-center gap-2 mb-3 text-decoration-none">
+                        <div class="brand-icon-box" style="width: 42px; height: 42px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.5rem;">directions_car</span>
+                        </div>
+                        <span class="headline-sm text-white fw-bold">DriveEase<span style="color: var(--primary);">.</span></span>
+                    </a>
+                    <h1 class="headline-lg text-white mb-1">Join DriveEase Fleet</h1>
+                    <p class="text-muted small mb-0">Experience instant keyless self-drive car rentals with zero security deposit.</p>
+                </div>
+
+                <!-- Form Section -->
+                <form asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" class="position-relative" style="z-index: 2;">
+                    
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+                    {
+                        <div class="alert alert-danger py-2 px-3 mb-3 rounded-3 small d-flex align-items-center gap-2" role="alert" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">error</span>
+                            <div asp-validation-summary="ModelOnly" class="mb-0"></div>
+                        </div>
+                    }
+
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label for="FullName" class="form-label d-block mb-1 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Full Name</label>
+                            <div class="position-relative">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">badge</span>
+                                </div>
+                                <input asp-for="FullName" 
+                                       id="FullName"
+                                       name="FullName"
+                                       value="@(Model?.FullName ?? "")"
+                                       class="form-control text-white shadow-none ps-5 py-2" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                       placeholder="Enter your full name" 
+                                       autocomplete="off"
+                                       autofocus 
+                                       required />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Email Address -->
+                        <div class="col-md-6">
+                            <label for="Email" class="form-label d-block mb-1 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Email Address</label>
+                            <div class="position-relative">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">mail</span>
+                                </div>
+                                <input asp-for="Email" 
+                                       id="Email"
+                                       name="Email"
+                                       type="email"
+                                       value="@(Model?.Email ?? "")"
+                                       class="form-control text-white shadow-none ps-5 py-2" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                       placeholder="Enter email address" 
+                                       autocomplete="off"
+                                       required />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Mobile Number -->
+                        <div class="col-md-6">
+                            <label for="MobileNumber" class="form-label d-block mb-1 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Mobile Number</label>
+                            <div class="position-relative">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">phone</span>
+                                </div>
+                                <input asp-for="MobileNumber" 
+                                       id="MobileNumber"
+                                       name="MobileNumber"
+                                       value="@(Model?.MobileNumber ?? "")"
+                                       class="form-control text-white shadow-none ps-5 py-2" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                       placeholder="Enter 10-digit mobile number" 
+                                       autocomplete="off"
+                                       required />
+                            </div>
+                            <span asp-validation-for="MobileNumber" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Driving License (Optional / Fast Verification) -->
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="DrivingLicenseNumber" class="form-label mb-0 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Driving License</label>
+                                <span class="label-sm text-muted" style="font-size: 0.75rem;">(Optional)</span>
+                            </div>
+                            <div class="position-relative">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">credit_card</span>
+                                </div>
+                                <input asp-for="DrivingLicenseNumber" 
+                                       id="DrivingLicenseNumber"
+                                       name="DrivingLicenseNumber"
+                                       value="@(Model?.DrivingLicenseNumber ?? "")"
+                                       class="form-control text-white shadow-none ps-5 py-2" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                       placeholder="Enter driving license number" 
+                                       autocomplete="off" />
+                            </div>
+                            <span asp-validation-for="DrivingLicenseNumber" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-md-6">
+                            <label for="regPasswordInput" class="form-label d-block mb-1 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Password</label>
+                            <div class="position-relative">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">lock</span>
+                                </div>
+                                <input asp-for="Password" 
+                                       id="regPasswordInput"
+                                       name="Password"
+                                       type="password" 
+                                       value=""
+                                       class="form-control text-white shadow-none ps-5 pe-5 py-2" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                       placeholder="Create password (min 4 characters)" 
+                                       autocomplete="new-password"
+                                       required />
+                                <button type="button" 
+                                        class="btn position-absolute top-50 end-0 translate-middle-y pe-3 border-0 shadow-none d-flex align-items-center" 
+                                        style="color: var(--text-muted); z-index: 5;"
+                                        onclick="toggleRegPassword('regPasswordInput', 'toggleRegPassIcon')" 
+                                        tabindex="-1">
+                                    <span class="material-symbols-outlined" id="toggleRegPassIcon" style="font-size: 1.15rem;">visibility</span>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="col-md-6">
+                            <label for="regConfirmPasswordInput" class="form-label d-block mb-1 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Confirm Password</label>
+                            <div class="position-relative">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-3 d-flex align-items-center pointer-events-none" style="z-index: 5;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem; color: var(--primary);">lock_reset</span>
+                                </div>
+                                <input asp-for="ConfirmPassword" 
+                                       id="regConfirmPasswordInput"
+                                       name="ConfirmPassword"
+                                       type="password" 
+                                       value=""
+                                       class="form-control text-white shadow-none ps-5 pe-5 py-2" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); font-size: 0.9375rem; color: #FFFFFF;" 
+                                       placeholder="Re-enter password" 
+                                       autocomplete="new-password"
+                                       required />
+                                <button type="button" 
+                                        class="btn position-absolute top-50 end-0 translate-middle-y pe-3 border-0 shadow-none d-flex align-items-center" 
+                                        style="color: var(--text-muted); z-index: 5;"
+                                        onclick="toggleRegPassword('regConfirmPasswordInput', 'toggleRegConfirmIcon')" 
+                                        tabindex="-1">
+                                    <span class="material-symbols-outlined" id="toggleRegConfirmIcon" style="font-size: 1.15rem;">visibility</span>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label fw-semibold"></label>
-                        <input asp-for="Email" class="form-control" placeholder="name@example.com" />
-                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    <!-- Terms & Agreement notice -->
+                    <div class="d-flex align-items-center gap-2 mt-3 mb-4 text-muted small">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--primary);">check_circle</span>
+                        <span>By signing up, you agree to DriveEase Terms of Service and Privacy Policy.</span>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="MobileNumber" class="form-label fw-semibold"></label>
-                        <input asp-for="MobileNumber" class="form-control" placeholder="Mobile Number" />
-                        <span asp-validation-for="MobileNumber" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="DrivingLicenseNumber" class="form-label fw-semibold"></label>
-                        <input asp-for="DrivingLicenseNumber" class="form-control" placeholder="Driving License Number" />
-                        <span asp-validation-for="DrivingLicenseNumber" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label fw-semibold"></label>
-                        <input asp-for="Password" class="form-control" type="password" placeholder="Password" />
-                        <span asp-validation-for="Password" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
-                        <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm Password" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
-                        Register
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary-gradient w-100 py-3 justify-content-center mb-3">
+                        <span>Create Voyager Account</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
 
-                    <div class="text-center mt-3 small">
-                        Already have an account? <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">Login here</a>
+                    <!-- Login Navigation -->
+                    <div class="text-center pt-2 border-top" style="border-color: var(--border-subtle) !important;">
+                        <span class="text-muted small">Already have an account?</span>
+                        <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="fw-semibold ms-1 text-decoration-none" style="color: var(--primary-light);">
+                            Sign In here
+                        </a>
                     </div>
                 </form>
+
+                <!-- Trust Chips -->
+                <div class="d-flex justify-content-center flex-wrap gap-3 mt-4 pt-3 text-center position-relative" style="z-index: 2;">
+                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--tertiary);">verified</span>
+                        <span>100% Verified Fleet</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--tertiary);">shield</span>
+                        <span>Zero Security Deposit</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--tertiary);">support_agent</span>
+                        <span>24/7 Roadside Assistance</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -63,4 +224,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleRegPassword(inputId, iconId) {
+            const pwdInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(iconId);
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                toggleIcon.innerText = 'visibility_off';
+            } else {
+                pwdInput.type = 'password';
+                toggleIcon.innerText = 'visibility';
+            }
+        }
+    </script>
 }

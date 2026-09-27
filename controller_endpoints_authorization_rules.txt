@@ -1,0 +1,137 @@
+========================================================================================================================
+DRIVEEASE CAR RENTAL SYSTEM - CONTROLLER ENDPOINTS VS AUTHORIZATION RULES MATRIX
+========================================================================================================================
+Base URL: http://localhost:5124
+Technology: ASP.NET Core Web API + ASP.NET Core Identity + EF Core + PostgreSQL
+Roles: Admin, Customer, Owner
+
+------------------------------------------------------------------------------------------------------------------------
+1. AUTHENTICATION CONTROLLER (AuthController.cs) - Route: /api/auth
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+POST   | /api/auth/register       | [AllowAnonymous]               | Public              | Registers user as Customer (VerificationStatus = Pending)
+POST   | /api/auth/register-owner | [AllowAnonymous]               | Public              | Registers user as Owner (VerificationStatus = Pending)
+POST   | /api/auth/login          | [AllowAnonymous]               | Public              | Authenticates user via Identity Cookie session
+POST   | /api/auth/logout         | [Authorize]                    | Any Authenticated   | Clears user Identity sign-in session
+GET    | /api/auth/me             | [Authorize]                    | Any Authenticated   | Returns profile details & role of logged-in user
+PUT    | /api/auth/profile        | [Authorize]                    | Any Authenticated   | Updates name, phone, license of logged-in user
+
+
+------------------------------------------------------------------------------------------------------------------------
+2. CARS / VEHICLES CONTROLLER (CarsController.cs) - Route: /api/cars
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+GET    | /api/cars                | [AllowAnonymous]               | Public              | Lists only Approved & Available vehicles with filters
+GET    | /api/cars/{id}           | [AllowAnonymous]               | Public              | Returns car details, rating, and review statistics
+GET    | /api/cars/recommended    | [AllowAnonymous]               | Public              | Rule-based recommendations (Budget, Seats, Type)
+GET    | /api/cars/my             | [Authorize(Roles="Owner,Admin")]| Owner, Admin       | Lists vehicles owned by logged-in user (OwnerId == userId)
+POST   | /api/cars                | [Authorize(Roles="Owner,Admin")]| Owner, Admin       | Owner must be Verified; car status set to Pending
+PUT    | /api/cars/{id}           | [Authorize(Roles="Owner,Admin")]| Owner, Admin       | Enforces OwnerId == userId; Owner cannot self-approve
+DELETE | /api/cars/{id}           | [Authorize(Roles="Owner,Admin")]| Owner, Admin       | Deactivates car; enforces OwnerId == userId
+PUT    | /api/cars/{id}/availability| [Authorize(Roles="Owner,Admin")]| Owner, Admin     | Sets Available/Booked; enforces OwnerId == userId
+PUT    | /api/cars/{id}/maintenance | [Authorize(Roles="Owner,Admin")]| Owner, Admin     | Sets Maintenance status; enforces OwnerId == userId
+
+
+------------------------------------------------------------------------------------------------------------------------
+3. BOOKINGS CONTROLLER (BookingsController.cs) - Route: /api/bookings
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+POST   | /api/bookings            | [Authorize(Roles="Customer,Admin")]| Customer, Admin  | Customer must be Verified; checks car date availability
+GET    | /api/bookings/my         | [Authorize(Roles="Customer,Admin")]| Customer, Admin  | Returns logged-in customer's own bookings
+GET    | /api/bookings/{id}       | [Authorize]                    | Customer, Owner, Admin | IDOR Check: Customer can only view own booking; Owner can only view if car belongs to them
+GET    | /api/bookings            | [Authorize(Roles="Admin")]     | Admin Only          | Admin view of all platform bookings
+GET    | /api/owner/bookings      | [Authorize(Roles="Owner,Admin")]| Owner, Admin       | Lists bookings on vehicles where Vehicle.OwnerId == userId
+GET    | /api/owner/bookings/{id} | [Authorize(Roles="Owner,Admin")]| Owner, Admin       | Checks booking vehicle belongs to logged-in owner
+PUT    | /api/bookings/{id}/cancel| [Authorize]                    | Customer, Admin     | Customer can only cancel own active/pending booking
+
+
+------------------------------------------------------------------------------------------------------------------------
+4. PAYMENTS CONTROLLER (PaymentsController.cs) - Route: /api/payments
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+POST   | /api/payments/{id}/pay   | [Authorize]                    | Customer, Admin     | Customer can only pay for own booking; Simulates TXN ID
+GET    | /api/payments/{id}       | [Authorize]                    | Customer, Owner, Admin | Viewable by booking owner, vehicle owner, or Admin
+
+
+------------------------------------------------------------------------------------------------------------------------
+5. REVIEWS & RATINGS CONTROLLER (ReviewsController.cs) - Route: /api/reviews
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+GET    | /api/cars/{carId}/reviews| [AllowAnonymous]               | Public              | Lists customer reviews and ratings for a vehicle
+POST   | /api/reviews             | [Authorize(Roles="Customer,Admin")]| Customer, Admin  | Allowed ONLY after completing a booking for that car
+PUT    | /api/reviews/{id}        | [Authorize]                    | Customer, Admin     | Author can update rating & comment; updates car rating
+DELETE | /api/reviews/{id}        | [Authorize]                    | Customer, Admin     | Author or Admin can delete review
+
+
+------------------------------------------------------------------------------------------------------------------------
+6. PROMO CODES CONTROLLER (PromoCodesController.cs) - Route: /api/promocodes
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+GET    | /api/promocodes          | [AllowAnonymous]               | Public              | View active promo codes (Code, Discount, Validity)
+POST   | /api/promocodes          | [Authorize(Roles="Admin")]     | Admin Only          | Create new percentage or flat discount code
+PUT    | /api/promocodes/{id}     | [Authorize(Roles="Admin")]     | Admin Only          | Update promo code details
+DELETE | /api/promocodes/{id}     | [Authorize(Roles="Admin")]     | Admin Only          | Delete/deactivate promo code
+
+
+------------------------------------------------------------------------------------------------------------------------
+7. NOTIFICATIONS CONTROLLER (NotificationsController.cs) - Route: /api/notifications
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                 | Authorization Attribute        | Roles Allowed       | Business / Security Rules
+-------+--------------------------+--------------------------------+---------------------+---------------------------------------------------------
+GET    | /api/notifications       | [Authorize]                    | Any Authenticated   | Returns notifications belonging only to current user
+PUT    | /api/notifications/{id}/read| [Authorize]                 | Any Authenticated   | Marks own notification as read (UserId == currentUserId)
+
+
+------------------------------------------------------------------------------------------------------------------------
+8. ADMIN CONTROLLER (AdminController.cs) - Route: /api/admin
+------------------------------------------------------------------------------------------------------------------------
+Method | Endpoint                       | Authorization Attribute    | Roles Allowed   | Business / Security Rules
+-------+--------------------------------+----------------------------+-----------------+---------------------------------------------------------
+GET    | /api/admin/dashboard           | [Authorize(Roles="Admin")] | Admin Only      | Aggregates Users, Owners, Cars, Pending items, Revenue
+GET    | /api/admin/owners/pending      | [Authorize(Roles="Admin")] | Admin Only      | Lists Owners awaiting verification
+PUT    | /api/admin/owners/{id}/approve | [Authorize(Roles="Admin")] | Admin Only      | Approves owner (VerificationStatus = Verified)
+PUT    | /api/admin/owners/{id}/reject  | [Authorize(Roles="Admin")] | Admin Only      | Rejects owner verification
+GET    | /api/admin/customers/pending   | [Authorize(Roles="Admin")] | Admin Only      | Lists Customers awaiting verification
+PUT    | /api/admin/customers/{id}/approve| [Authorize(Roles="Admin")]| Admin Only      | Approves customer verification
+PUT    | /api/admin/customers/{id}/reject| [Authorize(Roles="Admin")] | Admin Only      | Rejects customer verification
+GET    | /api/admin/cars/pending        | [Authorize(Roles="Admin")] | Admin Only      | Lists Owner-submitted cars awaiting approval
+PUT    | /api/admin/cars/{id}/approve   | [Authorize(Roles="Admin")] | Admin Only      | Approves vehicle (Status = Approved / Available)
+PUT    | /api/admin/cars/{id}/reject    | [Authorize(Roles="Admin")] | Admin Only      | Rejects vehicle listing
+GET    | /api/admin/users               | [Authorize(Roles="Admin")] | Admin Only      | Lists all registered accounts across all 3 roles
+GET    | /api/admin/users/{id}          | [Authorize(Roles="Admin")] | Admin Only      | Gets detailed user profile by ID
+PUT    | /api/admin/users/{id}/status   | [Authorize(Roles="Admin")] | Admin Only      | Activates / Deactivates a user account
+GET    | /api/admin/bookings            | [Authorize(Roles="Admin")] | Admin Only      | Global list of all platform bookings
+GET    | /api/admin/bookings/{id}       | [Authorize(Roles="Admin")] | Admin Only      | Global view of any specific booking
+PUT    | /api/admin/bookings/{id}/status| [Authorize(Roles="Admin")] | Admin Only      | Manually override booking status
+PUT    | /api/admin/bookings/{id}/cancel| [Authorize(Roles="Admin")] | Admin Only      | Admin-initiated booking cancellation
+
+========================================================================================================================
+SUMMARY AUTHORIZATION MATRIX TABLE
+========================================================================================================================
+Feature / Action                      | Public | Customer | Owner | Admin
+--------------------------------------+--------+----------+-------+------
+Register as Customer                  |   ✓    |    -     |   -   |   -
+Register as Owner                     |   ✓    |    -     |   -   |   -
+Login / Logout / View Profile         |   -    |    ✓     |   ✓   |   ✓
+Browse / Search Available Cars        |   ✓    |    ✓     |   ✓   |   ✓
+Get Car Recommendations               |   ✓    |    ✓     |   ✓   |   ✓
+Add Car (Pending Admin Approval)      |   -    |    ✗     |   ✓   |   ✓
+Manage Own Cars (Availability/Maint.) |   -    |    ✗     |   ✓   |   ✓
+Manage Other Owner's Cars             |   -    |    ✗     |   ✗   |   ✓
+Approve / Reject Owner Vehicles       |   -    |    ✗     |   ✗   |   ✓
+Create Booking (Verified Customers)   |   -    |    ✓     |   ✗   |   ✓
+View Own Customer Bookings            |   -    |    ✓     |   ✗   |   ✓
+View Bookings on Own Fleet            |   -    |    ✗     |   ✓   |   ✓
+View All Platform Bookings            |   -    |    ✗     |   ✗   |   ✓
+Simulate Payment for Booking          |   -    |    ✓     |   ✗   |   ✓
+Review Completed Car Rental           |   -    |    ✓     |   ✗   |   ✓
+Manage Promo Codes (Create/Edit/Del)  |   -    |    ✗     |   ✗   |   ✓
+Verify / Approve Customer & Owner     |   -    |    ✗     |   ✗   |   ✓
+Access Admin Dashboard & Analytics    |   -    |    ✗     |   ✗   |   ✓
+========================================================================================================================
