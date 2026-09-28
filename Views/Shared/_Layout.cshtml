@@ -51,8 +51,8 @@
             <nav class="desktop-nav-pills nav-pill-container d-none d-xl-flex">
                 <a class="nav-pill-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")" 
                    asp-controller="Home" asp-action="Index">Home</a>
-                <a class="nav-pill-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Cars" ? "active" : "")" 
-                   asp-controller="Home" asp-action="Index" asp-fragment="explore-fleet">Explore Cars</a>
+                <a class="nav-pill-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Explore" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")" 
+                   asp-controller="Home" asp-action="Explore">Explore Cars</a>
                 <a class="nav-pill-link" href="#hourly-rental">Hourly Rental</a>
                 <a class="nav-pill-link" href="#how-it-works">How It Works</a>
                 @if (User.IsInRole("Admin"))
@@ -157,7 +157,7 @@
             <span class="material-symbols-outlined" style="color: var(--primary);">home</span>
             Home
         </a>
-        <a class="mobile-nav-link" asp-controller="Home" asp-action="Index" asp-fragment="explore-fleet">
+        <a class="mobile-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Explore" ? "active" : "")" asp-controller="Home" asp-action="Explore">
             <span class="material-symbols-outlined" style="color: var(--tertiary);">directions_car</span>
             Explore Cars
         </a>

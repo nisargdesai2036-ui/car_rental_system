@@ -15,6 +15,22 @@
                 <!-- Background Grid Lighting Accent -->
                 <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
 
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success py-2 px-3 small mb-4 d-flex align-items-center gap-2 position-relative" style="z-index: 5; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); color: #10B981;">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span>@TempData["SuccessMessage"]</span>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger py-2 px-3 small mb-4 d-flex align-items-center gap-2 position-relative" style="z-index: 5; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #FFB4AB;">
+                        <span class="material-symbols-outlined">error</span>
+                        <span>@TempData["ErrorMessage"]</span>
+                    </div>
+                }
+
                 <!-- Profile Header & Avatar -->
                 <div class="d-flex align-items-center gap-4 mb-4 position-relative" style="z-index: 2;">
                     <div class="position-relative">

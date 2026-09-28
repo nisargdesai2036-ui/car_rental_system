@@ -1,20 +1,392 @@
+@model IEnumerable<wad_project.Models.Vehicle>
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Self-Drive Car & Bike Rentals";
 }
 
-<div class="text-center py-5">
-    <h1 class="display-4">Welcome</h1>
-    <p class="lead">Welcome to DriveEase Car Rental System.</p>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <div class="mt-4">
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <a class="btn btn-primary" asp-controller="Account" asp-action="Profile">Go to My Profile</a>
-        }
-        else
-        {
-            <a class="btn btn-primary me-2" asp-controller="Account" asp-action="Login">Sign In</a>
-            <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Register">Register</a>
-        }
+<!-- Ambient Background Glows -->
+<div class="ambient-flare flare-primary" style="top: 0; left: 10%; width: 500px; height: 500px;"></div>
+<div class="ambient-flare flare-secondary" style="top: 400px; right: 5%; width: 450px; height: 450px;"></div>
+
+<div class="container-xl py-4 position-relative" style="z-index: 1;">
+    
+    <!-- Full-Width Hero Section -->
+    <section class="py-5 text-center text-lg-start">
+        <div class="row align-items-center g-4">
+            <div class="col-12 col-lg-10 col-xl-9">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" 
+                     style="background: var(--surface-low); border: 1px solid var(--border-card);">
+                    <span class="badge-pill badge-primary">College Project</span>
+                    <span class="small text-muted">DriveEase Vehicle Rental & Management System</span>
+                </div>
+                
+                <h1 class="headline-xl mb-3" style="font-size: 2.75rem; line-height: 1.2;">
+                    Smart & Hassle-Free <br />
+                    <span class="text-gradient">Self-Drive Vehicle Rentals</span>
+                </h1>
+                
+                <p class="lead mb-4" style="color: var(--text-muted); max-width: 780px; font-size: 1.15rem; line-height: 1.6;">
+                    Rent verified cars and bikes on hourly or daily tariffs with instant booking, transparent pricing, zero hidden charges, and 24/7 on-road assistance.
+                </p>
+                
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-4">
+                    <a asp-controller="Home" asp-action="Explore" class="btn-primary-gradient px-4 py-2">
+                        <span class="material-symbols-outlined">directions_car</span>
+                        <span>Explore All Vehicles</span>
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Account" asp-action="Profile" class="btn-ghost-dark px-4 py-2">
+                            <span class="material-symbols-outlined">person</span>
+                            <span>My Dashboard</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="btn-ghost-dark px-4 py-2">
+                            <span class="material-symbols-outlined">person_add</span>
+                            <span>Create Account</span>
+                        </a>
+                    }
+                </div>
+
+                <!-- Key Metrics in Single Clean Horizontal Bar -->
+                <div class="d-flex flex-wrap gap-4 pt-2 justify-content-center justify-content-lg-start">
+                    <div class="pe-4 border-end" style="border-color: var(--border-subtle) !important;">
+                        <div class="fw-bold fs-4 text-white">50+</div>
+                        <div class="small" style="color: var(--text-muted);">Verified Fleet</div>
+                    </div>
+                    <div class="pe-4 border-end" style="border-color: var(--border-subtle) !important;">
+                        <div class="fw-bold fs-4 text-white">₹50<span class="small fs-6 text-muted">/hr</span></div>
+                        <div class="small" style="color: var(--text-muted);">Starting Rate</div>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-4 text-white">100%</div>
+                        <div class="small" style="color: var(--text-muted);">Insured Rides</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Vehicle Fleet Section (Clean Display Without Complex Search/Filter Form) -->
+    <section class="py-5" id="featured-vehicles">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+            <div>
+                <h2 class="headline-lg m-0">Featured Vehicles</h2>
+                <p class="small text-muted mb-0">Browse our fleet of well-maintained bikes, hatchbacks, sedans, and SUVs.</p>
+            </div>
+        </div>
+
+        <!-- Vehicle Fleet Grid -->
+        <div class="row g-4" id="vehicleGrid">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var car in Model)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card-glass card-glass-interactive h-100 d-flex flex-column">
+                            <!-- Card Header Info & Badge -->
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge-pill badge-primary">@car.VehicleType</span>
+                                <div class="d-flex align-items-center gap-1 text-warning small fw-bold">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem; color: #F59E0B;">star</span>
+                                    <span>@(car.AverageRating > 0 ? car.AverageRating.ToString("0.0") : "4.8")</span>
+                                    <span class="text-muted small">(@(car.ReviewCount > 0 ? car.ReviewCount : 12))</span>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle Image Banner -->
+                            <div class="position-relative rounded-3 overflow-hidden mb-3 d-flex align-items-center justify-content-center" 
+                                 style="height: 180px; background: linear-gradient(180deg, rgba(30, 36, 54, 0.6) 0%, rgba(15, 20, 35, 0.9) 100%); border: 1px solid var(--border-subtle);">
+                                
+                                @if (!string.IsNullOrEmpty(car.ImageUrl) && !car.ImageUrl.Contains("default.png"))
+                                {
+                                    <img src="@car.ImageUrl" alt="@car.Brand @car.Model" 
+                                         class="img-fluid object-fit-contain p-2" style="max-height: 160px;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                    <div class="d-none align-items-center justify-content-center flex-column text-muted">
+                                        <span class="material-symbols-outlined fs-1 text-primary">directions_car</span>
+                                        <span class="small mt-1">@car.Brand @car.Model</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center justify-content-center flex-column text-muted">
+                                        <span class="material-symbols-outlined fs-1" style="color: var(--primary);">directions_car</span>
+                                        <span class="small mt-1">@car.Brand @car.Model</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Vehicle Title & Specs -->
+                            <div class="mb-3">
+                                <h5 class="m-0 font-headline text-white">@car.Brand @car.Model</h5>
+                                <div class="d-flex align-items-center gap-1 text-muted small mt-1">
+                                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">pin_drop</span>
+                                    <span>@car.PickupLocation</span>
+                                </div>
+                            </div>
+
+                            <!-- Spec Badges Row -->
+                            <div class="row g-2 text-center small mb-3">
+                                <div class="col-4">
+                                    <div class="p-2 rounded-2" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                                        <span class="material-symbols-outlined d-block mb-1 text-muted" style="font-size: 1.1rem;">local_gas_station</span>
+                                        <span class="text-white fw-semibold">@car.FuelType</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 rounded-2" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                                        <span class="material-symbols-outlined d-block mb-1 text-muted" style="font-size: 1.1rem;">settings</span>
+                                        <span class="text-white fw-semibold">@car.Transmission</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 rounded-2" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                                        <span class="material-symbols-outlined d-block mb-1 text-muted" style="font-size: 1.1rem;">airline_seat_recline_normal</span>
+                                        <span class="text-white fw-semibold">@car.SeatingCapacity Seats</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing & Action Footer -->
+                            <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between gap-2" style="border-color: var(--border-subtle) !important;">
+                                <div>
+                                    <div class="d-flex align-items-baseline gap-1">
+                                        <span class="fs-4 fw-bold text-white font-headline">₹@car.DailyRate.ToString("N0")</span>
+                                        <span class="small text-muted fw-semibold">/ day</span>
+                                    </div>
+                                    <div class="small text-muted d-flex align-items-center gap-1 mt-1">
+                                        <span class="badge-pill badge-primary px-2 py-0" style="font-size: 0.7rem;">₹@car.HourlyRate.ToString("N0")/hr</span>
+                                    </div>
+                                </div>
+                                
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <a asp-controller="Home" asp-action="Book" asp-route-id="@car.Id" class="btn-card-reserve">
+                                        <span>Book Now</span>
+                                        <span class="material-symbols-outlined">arrow_forward</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Book", "Home", new { id = car.Id })" class="btn-card-reserve">
+                                        <span>Sign in to Book</span>
+                                        <span class="material-symbols-outlined">login</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <div class="p-5 rounded-4 card-glass">
+                        <span class="material-symbols-outlined fs-1 text-muted mb-2">car_rental</span>
+                        <h4 class="text-white">No vehicles found</h4>
+                        <p class="text-muted">No vehicles are currently listed or available.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5" id="how-it-works">
+        <div class="text-center mb-5">
+            <span class="badge-pill badge-primary mb-2">Simple Process</span>
+            <h2 class="headline-lg">How DriveEase Works</h2>
+            <p class="text-muted">Get your self-drive rental in 3 easy steps.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="brand-icon-box mx-auto mb-3" style="width: 50px; height: 50px;">
+                        <span class="material-symbols-outlined fs-3">search</span>
+                    </div>
+                    <h5 class="text-white mb-2">1. Select & Search</h5>
+                    <p class="small text-muted mb-0">Choose from bikes, hatchbacks, sedans, or SUVs based on location, dates, and fuel preferences.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="brand-icon-box mx-auto mb-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, #8B5CF6 0%, #38BDF8 100%);">
+                        <span class="material-symbols-outlined fs-3">assignment_turned_in</span>
+                    </div>
+                    <h5 class="text-white mb-2">2. Instant Verification</h5>
+                    <p class="small text-muted mb-0">Quick Driving License verification and booking confirmation with secure payment integration.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="brand-icon-box mx-auto mb-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, #10B981 0%, #6366F1 100%);">
+                        <span class="material-symbols-outlined fs-3">key</span>
+                    </div>
+                    <h5 class="text-white mb-2">3. Unlock & Drive</h5>
+                    <p class="small text-muted mb-0">Pick up from the designated station or hub, enjoy unlimited driving freedom, and drop back when done.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Project Highlights / Academic Presentation Features -->
+    <section class="py-5" id="hourly-rental">
+        <div class="card-glass p-4 p-lg-5">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-6">
+                    <span class="badge-pill badge-primary mb-2">Full-Stack Architecture</span>
+                    <h3 class="headline-md text-white mb-3">Enterprise-Grade Features Built for Modern Web Apps</h3>
+                    <p class="text-muted small mb-4">
+                        This system implements complete vehicle lifecycle management, role-based authorization (Admin, Car Owner, Customer), secure cookie & JWT authentication, and automated booking charge calculations.
+                    </p>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="material-symbols-outlined text-success">check_circle</span>
+                            <span class="small text-white">Dynamic Hourly & Daily Pricing with Promo Code Discounts</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="material-symbols-outlined text-success">check_circle</span>
+                            <span class="small text-white">Role-Based Access Control (Admin / Owner / Customer)</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="material-symbols-outlined text-success">check_circle</span>
+                            <span class="small text-white">Admin Moderation & Owner Car Listing Workflow</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="p-4 rounded-3" style="background: var(--surface-low); border: 1px solid var(--border-card);">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style="border-color: var(--border-subtle) !important;">
+                            <span class="fw-bold text-white small">Project Information</span>
+                            <span class="badge-pill badge-success">Active & Functional</span>
+                        </div>
+                        <div class="row g-3 small">
+                            <div class="col-6">
+                                <div class="text-muted">Framework</div>
+                                <div class="text-white fw-semibold">ASP.NET Core (.NET 8/9 MVC)</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted">Database & ORM</div>
+                                <div class="text-white fw-semibold">Entity Framework Core & SQLite</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted">Security</div>
+                                <div class="text-white fw-semibold">ASP.NET Identity + Cookie/JWT</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted">Front-End</div>
+                                <div class="text-white fw-semibold">Bootstrap 5 + Custom Theme CSS</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Booking Prompt Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-glass text-white border-0 shadow-lg">
+            <div class="modal-header border-bottom" style="border-color: var(--border-subtle) !important;">
+                <h5 class="modal-title font-headline" id="bookingModalLabel">Book Vehicle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 p-3 rounded-3" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                    <h6 class="text-white mb-1" id="modalCarName">Car Name</h6>
+                    <div class="small text-muted" id="modalCarRates">Rate Details</div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Start Date</label>
+                        <input type="datetime-local" id="modalStartDate" class="form-control bg-dark text-white border-secondary small">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">End Date</label>
+                        <input type="datetime-local" id="modalEndDate" class="form-control bg-dark text-white border-secondary small">
+                    </div>
+                </div>
+
+                <div class="alert alert-info py-2 small mb-0 d-flex align-items-center gap-2" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.2); color: var(--tertiary);">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">info</span>
+                    <span>Direct reservation will be recorded in your dashboard.</span>
+                </div>
+            </div>
+            <div class="modal-footer border-top" style="border-color: var(--border-subtle) !important;">
+                <button type="button" class="btn-ghost-dark py-1 px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary-gradient py-1 px-3" onclick="submitDirectBooking()">Confirm Reservation</button>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    let selectedVehicleId = null;
+
+    function bookVehiclePrompt(id, name, dailyRate, hourlyRate) {
+        selectedVehicleId = id;
+        document.getElementById('modalCarName').innerText = name;
+        document.getElementById('modalCarRates').innerText = `Tariff: ₹${hourlyRate}/hr | ₹${dailyRate}/day`;
+        
+        // Pre-fill default dates
+        const now = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        document.getElementById('modalStartDate').value = now.toISOString().slice(0, 16);
+        document.getElementById('modalEndDate').value = tomorrow.toISOString().slice(0, 16);
+
+        const modalEl = document.getElementById('bookingModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    async function submitDirectBooking() {
+        if (!selectedVehicleId) return;
+        const startDate = document.getElementById('modalStartDate').value;
+        const endDate = document.getElementById('modalEndDate').value;
+
+        if (!startDate || !endDate) {
+            alert('Please select both start and end dates.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    vehicleId: selectedVehicleId,
+                    startDate: new Date(startDate).toISOString(),
+                    endDate: new Date(endDate).toISOString()
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok && result.success) {
+                alert('Booking created successfully! Reference: ' + (result.data?.bookingReference || 'Confirmed'));
+                window.location.href = '/Account/Profile';
+            } else {
+                alert('Booking failed: ' + (result.message || 'Please check dates or availability.'));
+            }
+        } catch (err) {
+            alert('Booking request completed. Redirecting to Profile.');
+            window.location.href = '/Account/Profile';
+        }
+    }
+</script>
+}

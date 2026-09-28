@@ -18,7 +18,7 @@ public class VehicleService : IVehicleService
     {
         return await _context.Vehicles
             .Where(v => v.Status != VehicleStatus.UnderMaintenance)
-            .OrderBy(v => v.DailyRate)
+            .OrderBy(v => (double)v.DailyRate)
             .ToListAsync();
     }
 

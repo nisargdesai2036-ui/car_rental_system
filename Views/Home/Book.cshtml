@@ -1,0 +1,316 @@
+@model wad_project.ViewModels.BookingRequestViewModel
+@using wad_project.Models
+@{
+    ViewData["Title"] = "Reserve Vehicle";
+    var vehicle = ViewData["Vehicle"] as Vehicle ?? new Vehicle();
+}
+
+<!-- Ambient Lighting Canvas Flares -->
+<div class="ambient-flare flare-primary" style="top: 5%; left: 10%; width: 500px; height: 500px;"></div>
+<div class="ambient-flare flare-secondary" style="top: 40%; right: 5%; width: 450px; height: 450px;"></div>
+
+<div class="container-xl py-4 position-relative" style="z-index: 2;">
+    <!-- Breadcrumb & Page Title -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a asp-controller="Home" asp-action="Index" class="text-muted text-decoration-none small hover-primary">Home</a>
+            <span class="text-muted small">/</span>
+            <a asp-controller="Home" asp-action="Explore" class="text-muted text-decoration-none small hover-primary">Explore Vehicles</a>
+            <span class="text-muted small">/</span>
+            <span class="text-white small fw-semibold">Reservation</span>
+        </div>
+        <h1 class="headline-lg m-0">Confirm Your Booking</h1>
+        <p class="small text-muted mb-0">Select your rental schedule, verify tariff breakdown, apply coupons, and reserve your ride.</p>
+    </div>
+
+    <!-- Booking Content: Form (Left) & Vehicle Summary Card (Right) -->
+    <div class="row g-4">
+        
+        <!-- Booking Form Column -->
+        <div class="col-lg-7 col-xl-8">
+            <div class="card-glass p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom" style="border-color: var(--border-subtle) !important;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-primary" style="font-size: 1.5rem;">event_available</span>
+                        <h4 class="m-0 font-headline text-white">Booking Details</h4>
+                    </div>
+                    <span class="badge-pill badge-primary">Step 1 of 2</span>
+                </div>
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger py-2 small mb-4 d-flex align-items-center gap-2" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #FFB4AB;">
+                        <span class="material-symbols-outlined">error</span>
+                        <div>@Html.ValidationSummary(true, "", new { @class = "text-danger m-0 list-unstyled" })</div>
+                    </div>
+                }
+
+                <form asp-controller="Home" asp-action="Book" method="post" id="customerBookingForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="VehicleId" />
+                    <input type="hidden" asp-for="UserId" />
+
+                    <!-- Rental Plan (Daily or Hourly) -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold text-white mb-2">
+                            <span class="material-symbols-outlined align-middle me-1" style="font-size: 1.1rem; color: var(--primary);">schedule</span>
+                            Rental Plan Type
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="p-3 rounded-3 border d-flex align-items-center gap-3 cursor-pointer w-100" 
+                                       style="background: var(--surface-low); border-color: var(--border-card) !important;" id="planDailyCard">
+                                    <input type="radio" asp-for="RentalType" value="@RentalType.Daily" class="form-check-input mt-0" checked onchange="handleRentalTypeChange()" />
+                                    <div>
+                                        <div class="fw-bold text-white">Daily Rental</div>
+                                        <div class="small text-muted">₹@vehicle.DailyRate.ToString("N0") / day (24-hr cycle)</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="p-3 rounded-3 border d-flex align-items-center gap-3 cursor-pointer w-100" 
+                                       style="background: var(--surface-low); border-color: var(--border-card) !important;" id="planHourlyCard">
+                                    <input type="radio" asp-for="RentalType" value="@RentalType.Hourly" class="form-check-input mt-0" onchange="handleRentalTypeChange()" />
+                                    <div>
+                                        <div class="fw-bold text-white">Hourly Rental</div>
+                                        <div class="small text-muted">₹@vehicle.HourlyRate.ToString("N0") / hour (Short trips)</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup & Return Date Times -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="PickupDateTime" class="form-label small fw-semibold text-white mb-1">
+                                <span class="material-symbols-outlined align-middle me-1" style="font-size: 1rem; color: var(--tertiary);">calendar_today</span>
+                                Pickup Date & Time
+                            </label>
+                            <input asp-for="PickupDateTime" type="datetime-local" class="form-control bg-dark text-white border-secondary small" 
+                                   id="pickupInput" onchange="calculateLiveSummary()"
+                                   style="border-color: var(--border-card) !important; background-color: var(--surface-low) !important;" />
+                            <span asp-validation-for="PickupDateTime" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ReturnDateTime" class="form-label small fw-semibold text-white mb-1">
+                                <span class="material-symbols-outlined align-middle me-1" style="font-size: 1rem; color: var(--warning);">event_repeat</span>
+                                Return Date & Time
+                            </label>
+                            <input asp-for="ReturnDateTime" type="datetime-local" class="form-control bg-dark text-white border-secondary small" 
+                                   id="returnInput" onchange="calculateLiveSummary()"
+                                   style="border-color: var(--border-card) !important; background-color: var(--surface-low) !important;" />
+                            <span asp-validation-for="ReturnDateTime" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Pickup & Drop Location -->
+                    <div class="mb-4">
+                        <label asp-for="PickupLocation" class="form-label small fw-semibold text-white mb-1">
+                            <span class="material-symbols-outlined align-middle me-1" style="font-size: 1rem; color: var(--success);">location_on</span>
+                            Pickup Station / Hub
+                        </label>
+                        <select asp-for="PickupLocation" class="form-select bg-dark text-white border-secondary small"
+                                style="border-color: var(--border-card) !important; background-color: var(--surface-low) !important;">
+                            <option value="@vehicle.PickupLocation">@vehicle.PickupLocation (Default Station)</option>
+                            <option value="Downtown Hub">Downtown Hub</option>
+                            <option value="Airport Terminal 1">Airport Terminal 1</option>
+                            <option value="Railway Station">Railway Station</option>
+                            <option value="Surat Tech Park">Surat Tech Park</option>
+                        </select>
+                        <span asp-validation-for="PickupLocation" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Promo Code Application -->
+                    <div class="mb-4">
+                        <label asp-for="PromoCode" class="form-label small fw-semibold text-white mb-1">
+                            <span class="material-symbols-outlined align-middle me-1" style="font-size: 1rem; color: var(--secondary);">loyalty</span>
+                            Promo Code (Optional)
+                        </label>
+                        <div class="input-group">
+                            <input asp-for="PromoCode" class="form-control bg-dark text-white border-secondary text-uppercase small" 
+                                   id="promoInput" placeholder="e.g. WELCOME10, FESTIVE20"
+                                   style="border-color: var(--border-card) !important; background-color: var(--surface-low) !important;" />
+                            <button type="button" class="btn btn-outline-secondary px-3" onclick="calculateLiveSummary()">Apply</button>
+                        </div>
+                        <div class="small text-muted mt-1">Available college demo promo: <strong class="text-white">WELCOME10</strong> (10% OFF) or <strong class="text-white">DRIVE500</strong> (₹500 OFF)</div>
+                        <span asp-validation-for="PromoCode" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Submission Button -->
+                    <div class="pt-3 border-top d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3" style="border-color: var(--border-subtle) !important;">
+                        <a asp-controller="Home" asp-action="Explore" class="btn-ghost-dark w-100 w-sm-auto justify-content-center">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            <span>Choose Different Vehicle</span>
+                        </a>
+
+                        <button type="submit" class="btn-primary-gradient px-4 py-2 w-100 w-sm-auto justify-content-center">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span>Confirm & Reserve Ride</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Vehicle Summary & Live Tariff Card -->
+        <div class="col-lg-5 col-xl-4">
+            <div class="card-glass p-4 sticky-top" style="top: 100px; z-index: 10;">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: var(--border-subtle) !important;">
+                    <h5 class="m-0 font-headline text-white">Vehicle Summary</h5>
+                    <span class="badge-pill badge-success">@vehicle.Status</span>
+                </div>
+
+                <!-- Vehicle Thumbnail & Name -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="rounded-3 overflow-hidden d-flex align-items-center justify-content-center p-2" 
+                         style="width: 80px; height: 60px; background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                        @if (!string.IsNullOrEmpty(vehicle.ImageUrl) && !vehicle.ImageUrl.Contains("default.png"))
+                        {
+                            <img src="@vehicle.ImageUrl" alt="@vehicle.Brand @vehicle.Model" class="img-fluid object-fit-contain" style="max-height: 50px;" />
+                        }
+                        else
+                        {
+                            <span class="material-symbols-outlined text-primary fs-3">directions_car</span>
+                        }
+                    </div>
+
+                    <div>
+                        <h6 class="m-0 text-white font-headline">@vehicle.Brand @vehicle.Model</h6>
+                        <div class="small text-muted">@vehicle.VehicleType • @vehicle.FuelType • @vehicle.Transmission</div>
+                        <div class="small text-muted">Plate: <strong class="text-white">@vehicle.LicensePlate</strong></div>
+                    </div>
+                </div>
+
+                <!-- Tariff Specifications Table -->
+                <div class="p-3 rounded-3 mb-3" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Daily Rate:</span>
+                        <span class="text-white fw-bold">₹@vehicle.DailyRate.ToString("N0") / day</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Hourly Rate:</span>
+                        <span class="text-white fw-bold">₹@vehicle.HourlyRate.ToString("N0") / hr</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Seating Capacity:</span>
+                        <span class="text-white fw-bold">@vehicle.SeatingCapacity Seats</span>
+                    </div>
+                </div>
+
+                <!-- Live Price Estimate Calculation Section -->
+                <h6 class="font-headline text-white mb-2 small text-uppercase">Fare Estimate</h6>
+                <div class="d-flex flex-column gap-2 small mb-3">
+                    <div class="d-flex justify-content-between text-muted">
+                        <span id="estDurationLabel">Estimated Duration:</span>
+                        <span class="text-white fw-semibold" id="estDuration">1 Day(s)</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted">
+                        <span>Base Rental Amount:</span>
+                        <span class="text-white fw-semibold" id="estBasePrice">₹@vehicle.DailyRate.ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted">
+                        <span>Weekend / Peak Multiplier:</span>
+                        <span class="text-success fw-semibold" id="estMultiplier">1.0x (Standard)</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted" id="discountRow" style="display: none !important;">
+                        <span class="text-success">Discount Applied:</span>
+                        <span class="text-success fw-semibold" id="estDiscount">- ₹0</span>
+                    </div>
+                </div>
+
+                <!-- Total Amount Highlight -->
+                <div class="p-3 rounded-3 d-flex align-items-center justify-content-between border-top" 
+                     style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%); border-color: var(--primary) !important;">
+                    <div>
+                        <div class="small text-muted">Estimated Total</div>
+                        <div class="label-sm text-success">Inclusive of all taxes</div>
+                    </div>
+                    <div class="fs-4 fw-bold text-white font-headline" id="estTotalAmount">
+                        ₹@vehicle.DailyRate.ToString("N0")
+                    </div>
+                </div>
+
+                <div class="small text-muted mt-3 d-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--success);">shield</span>
+                    <span>100% Comprehensive insurance included.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const dailyRate = @vehicle.DailyRate;
+        const hourlyRate = @vehicle.HourlyRate;
+
+        function handleRentalTypeChange() {
+            calculateLiveSummary();
+        }
+
+        function calculateLiveSummary() {
+            const pickupVal = document.getElementById('pickupInput').value;
+            const returnVal = document.getElementById('returnInput').value;
+            const isHourly = document.querySelector('input[name="RentalType"]:checked')?.value === 'Hourly' || document.querySelector('input[name="RentalType"]:checked')?.value === '1';
+            const promo = document.getElementById('promoInput').value.trim().toUpperCase();
+
+            if (!pickupVal || !returnVal) return;
+
+            const pickupDate = new Date(pickupVal);
+            const returnDate = new Date(returnVal);
+
+            if (returnDate <= pickupDate) {
+                document.getElementById('estDuration').innerText = 'Invalid range';
+                return;
+            }
+
+            let duration = 1;
+            let basePrice = 0;
+
+            if (isHourly) {
+                const diffHours = (returnDate - pickupDate) / (1000 * 60 * 60);
+                duration = Math.max(1, Math.ceil(diffHours));
+                basePrice = duration * hourlyRate;
+                document.getElementById('estDurationLabel').innerText = 'Estimated Duration:';
+                document.getElementById('estDuration').innerText = `${duration} Hour(s)`;
+            } else {
+                const diffDays = (returnDate - pickupDate) / (1000 * 60 * 60 * 24);
+                duration = Math.max(1, Math.ceil(diffDays));
+                basePrice = duration * dailyRate;
+                document.getElementById('estDurationLabel').innerText = 'Estimated Duration:';
+                document.getElementById('estDuration').innerText = `${duration} Day(s)`;
+            }
+
+            // Simple promo mockup calculation for client-side feedback
+            let discount = 0;
+            if (promo === 'WELCOME10') {
+                discount = basePrice * 0.10;
+            } else if (promo === 'DRIVE500') {
+                discount = Math.min(500, basePrice);
+            }
+
+            let total = Math.max(0, basePrice - discount);
+
+            document.getElementById('estBasePrice').innerText = '₹' + Math.round(basePrice).toLocaleString();
+            
+            const discountRow = document.getElementById('discountRow');
+            if (discount > 0) {
+                discountRow.style.removeProperty('display');
+                discountRow.classList.add('d-flex');
+                document.getElementById('estDiscount').innerText = '- ₹' + Math.round(discount).toLocaleString();
+            } else {
+                discountRow.style.display = 'none';
+            }
+
+            document.getElementById('estTotalAmount').innerText = '₹' + Math.round(total).toLocaleString();
+        }
+
+        // Run calculation on initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateLiveSummary();
+        });
+    </script>
+}
