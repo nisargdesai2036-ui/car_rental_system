@@ -113,11 +113,26 @@
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--tertiary);">directions_car</span>
                                 My Bookings
                             </a>
+                            @if (User.IsInRole("Owner"))
+                            {
+                                <div class="dropdown-divider my-1" style="border-color: var(--border-subtle);"></div>
+                                <div class="px-3 py-1 small text-uppercase text-xs fw-bold" style="color: var(--secondary);">Owner Portal</div>
+                                <a class="dropdown-item-dark" asp-controller="Owner" asp-action="Index">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--secondary);">car_rental</span>
+                                    My Fleet & Earnings
+                                </a>
+                            }
                             @if (User.IsInRole("Admin"))
                             {
+                                <div class="dropdown-divider my-1" style="border-color: var(--border-subtle);"></div>
+                                <div class="px-3 py-1 small text-uppercase text-xs fw-bold" style="color: var(--primary);">Admin Portal</div>
+                                <a class="dropdown-item-dark" asp-controller="Admin" asp-action="Index">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--primary);">admin_panel_settings</span>
+                                    Admin Approvals Hub
+                                </a>
                                 <a class="dropdown-item-dark" href="/swagger" target="_blank">
                                     <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--warning);">api</span>
-                                    API Swagger
+                                    API Swagger Docs
                                 </a>
                             }
                             <div class="dropdown-divider my-1" style="border-color: var(--border-subtle);"></div>
@@ -175,6 +190,20 @@
                 <span class="material-symbols-outlined" style="color: var(--success);">person</span>
                 My Profile
             </a>
+            @if (User.IsInRole("Owner"))
+            {
+                <a class="mobile-nav-link" asp-controller="Owner" asp-action="Index">
+                    <span class="material-symbols-outlined" style="color: var(--secondary);">car_rental</span>
+                    My Fleet & Earnings
+                </a>
+            }
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="mobile-nav-link" asp-controller="Admin" asp-action="Index">
+                    <span class="material-symbols-outlined" style="color: var(--primary);">admin_panel_settings</span>
+                    Admin Approvals & Hub
+                </a>
+            }
             <form asp-controller="Account" asp-action="Logout" method="post" class="mt-2">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn-primary-gradient w-100 justify-content-center">

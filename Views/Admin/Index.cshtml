@@ -1,0 +1,740 @@
+@model wad_project.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Approvals";
+    var currentTab = Context.Request.Query["tab"].ToString();
+    if (string.IsNullOrEmpty(currentTab))
+    {
+        currentTab = (Model.PendingVehicles > 0 || Model.PendingOwners > 0) ? "approvals" : "vehicles";
+    }
+}
+
+<div class="container-fluid px-3 px-lg-5 py-4">
+    <!-- Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success bg-dark text-success border border-success rounded-4 d-flex align-items-center gap-3 p-3 mb-4 shadow-lg" role="alert">
+            <span class="material-symbols-outlined fs-4 text-success">check_circle</span>
+            <div class="flex-grow-1 fw-medium text-white">@TempData["SuccessMessage"]</div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger bg-dark text-danger border border-danger rounded-4 d-flex align-items-center gap-3 p-3 mb-4 shadow-lg" role="alert">
+            <span class="material-symbols-outlined fs-4 text-danger">error</span>
+            <div class="flex-grow-1 fw-medium text-white">@TempData["ErrorMessage"]</div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Simple Header -->
+    <div class="mb-4 pb-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+        <h1 class="h3 fw-bold text-white mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+            Admin Approvals Hub
+        </h1>
+        <p class="text-light opacity-75 mb-0">Review pending vehicle listings and user driving license verifications</p>
+    </div>
+
+    <!-- Overview Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 rounded-4 h-100" style="background: rgba(22, 27, 42, 0.95); border: 1px solid @(Model.PendingVehicles + Model.PendingOwners > 0 ? "rgba(245, 158, 11, 0.5)" : "rgba(255, 255, 255, 0.12)");">
+                <div class="small text-light opacity-75 fw-semibold mb-1">Pending Approvals</div>
+                <div class="h2 fw-bold text-warning mb-0">@(Model.PendingVehicles + Model.PendingOwners)</div>
+                <div class="small text-light opacity-75 mt-1">@Model.PendingVehicles cars, @Model.PendingOwners owners</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 rounded-4 h-100" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+                <div class="small text-light opacity-75 fw-semibold mb-1">Total Fleet</div>
+                <div class="h2 fw-bold text-white mb-0">@Model.TotalVehicles</div>
+                <div class="small text-light opacity-75 mt-1">@Model.AvailableVehicles active in catalog</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 rounded-4 h-100" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+                <div class="small text-light opacity-75 fw-semibold mb-1">Total Users</div>
+                <div class="h2 fw-bold text-white mb-0">@Model.TotalUsers</div>
+                <div class="small text-light opacity-75 mt-1">@Model.TotalCustomers customers, @Model.TotalOwners owners</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 rounded-4 h-100" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+                <div class="small text-light opacity-75 fw-semibold mb-1">Platform Bookings</div>
+                <div class="h2 fw-bold text-white mb-0">@Model.TotalBookings</div>
+                <div class="small text-light opacity-75 mt-1">@Model.ActiveBookings active trips</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="d-flex flex-wrap gap-2 p-1 rounded-pill mb-4" style="background: #090E1C; border: 1px solid rgba(255, 255, 255, 0.1); max-width: max-content;">
+        <button type="button" class="btn admin-tab-btn rounded-pill px-4 py-2 small fw-semibold @(currentTab == "approvals" ? "active-tab" : "")" onclick="switchAdminTab('approvals')">
+            <span class="material-symbols-outlined align-middle fs-6 me-1 text-warning">pending_actions</span> 
+            Pending Approvals (@(Model.PendingVehicles + Model.PendingOwners))
+        </button>
+        <button type="button" class="btn admin-tab-btn rounded-pill px-4 py-2 small fw-semibold @(currentTab == "vehicles" ? "active-tab" : "")" onclick="switchAdminTab('vehicles')">
+            <span class="material-symbols-outlined align-middle fs-6 me-1">directions_car</span> 
+            All Vehicles (@Model.Vehicles.Count)
+        </button>
+        <button type="button" class="btn admin-tab-btn rounded-pill px-4 py-2 small fw-semibold @(currentTab == "users" ? "active-tab" : "")" onclick="switchAdminTab('users')">
+            <span class="material-symbols-outlined align-middle fs-6 me-1">group</span> 
+            All Users (@Model.Users.Count)
+        </button>
+        <button type="button" class="btn admin-tab-btn rounded-pill px-4 py-2 small fw-semibold @(currentTab == "promos" ? "active-tab" : "")" onclick="switchAdminTab('promos')">
+            <span class="material-symbols-outlined align-middle fs-6 me-1 text-success">loyalty</span> 
+            Promo Codes (@Model.PromoCodes.Count)
+        </button>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: PENDING APPROVALS -->
+    <!-- ========================================================================= -->
+    <div id="tab-approvals" class="admin-tab-pane @(currentTab == "approvals" ? "" : "d-none")">
+        <!-- 1.1 Pending Vehicles -->
+        <div class="glass-card p-4 rounded-4 mb-4" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+            <div class="mb-3">
+                <h3 class="h5 fw-bold text-white mb-1">Vehicles Awaiting Approval</h3>
+                <p class="small text-light opacity-75 mb-0">Approve cars to make them available to customers, or reject if invalid.</p>
+            </div>
+
+            @{
+                var pendingVehiclesList = Model.Vehicles.Where(v => v.Status == wad_project.Models.VehicleStatus.Pending).ToList();
+            }
+
+            @if (!pendingVehiclesList.Any())
+            {
+                <div class="p-4 text-center rounded-3" style="background: #0E1321; border: 1px dashed rgba(255, 255, 255, 0.15);">
+                    <div class="text-white fw-semibold">No pending vehicles</div>
+                    <div class="small text-light opacity-75">All submitted cars have been reviewed.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="small text-uppercase tracking-wider border-bottom" style="color: #CBD5E1; border-color: rgba(255, 255, 255, 0.1) !important;">
+                                <th>Vehicle</th>
+                                <th>Owner</th>
+                                <th>Plate</th>
+                                <th>Rates</th>
+                                <th>Location</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var car in pendingVehiclesList)
+                            {
+                                <tr style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="@car.ImageUrl" alt="@car.Brand @car.Model" class="rounded-3 object-fit-cover" style="width: 60px; height: 40px; background: #0A0F1D;" onerror="this.src='https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=400&q=80';" />
+                                            <div>
+                                                <div class="fw-bold text-white">@car.Brand @car.Model (@car.Year)</div>
+                                                <div class="small text-light opacity-75">@car.VehicleType • @car.Transmission</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-white">@(car.Owner?.FullName ?? "Owner")</div>
+                                        <div class="small text-light opacity-75">@(car.Owner?.Email ?? "-")</div>
+                                    </td>
+                                    <td>
+                                        <span class="font-monospace fw-bold text-white px-2 py-1 rounded" style="background: #090E1C; border: 1px solid rgba(255, 255, 255, 0.15);">
+                                            @car.LicensePlate
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-white">$@car.DailyRate/day</div>
+                                        <div class="small text-light opacity-75">$@car.HourlyRate/hr</div>
+                                    </td>
+                                    <td class="small text-white">@car.PickupLocation</td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form asp-action="ApproveVehicle" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@car.Id" />
+                                                <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-semibold text-xs">
+                                                    Approve
+                                                </button>
+                                            </form>
+                                            <form asp-action="RejectVehicle" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@car.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold text-xs">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <!-- 1.2 Pending User Verifications -->
+        <div class="glass-card p-4 rounded-4" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+            <div class="mb-3">
+                <h3 class="h5 fw-bold text-white mb-1">User & Owner ID Verifications</h3>
+                <p class="small text-light opacity-75 mb-0">Verify driving licenses to grant user rental access.</p>
+            </div>
+
+            @{
+                var pendingUsersList = Model.Users.Where(u => u.VerificationStatus == wad_project.Models.VerificationStatus.Pending).ToList();
+            }
+
+            @if (!pendingUsersList.Any())
+            {
+                <div class="p-4 text-center rounded-3" style="background: #0E1321; border: 1px dashed rgba(255, 255, 255, 0.15);">
+                    <div class="text-white fw-semibold">No pending user verifications</div>
+                    <div class="small text-light opacity-75">All user driving licenses are verified.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="small text-uppercase tracking-wider border-bottom" style="color: #CBD5E1; border-color: rgba(255, 255, 255, 0.1) !important;">
+                                <th>User</th>
+                                <th>Contact</th>
+                                <th>Role</th>
+                                <th>License Number</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var u in pendingUsersList)
+                            {
+                                <tr style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                                    <td>
+                                        <div class="fw-bold text-white">@u.FullName</div>
+                                        <div class="small text-light opacity-75">Registered @u.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-white small">@u.Email</div>
+                                        <div class="text-light opacity-75 text-xs">@u.MobileNumber</div>
+                                    </td>
+                                    <td>
+                                        @if (u.Role == wad_project.Models.UserRole.Owner)
+                                        {
+                                            <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(139, 92, 246, 0.25); color: #C084FC; border: 1px solid rgba(139, 92, 246, 0.4);">Owner</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(255, 255, 255, 0.1); color: #FFFFFF;">Customer</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="font-monospace small text-white px-2 py-1 rounded" style="background: #090E1C; border: 1px solid rgba(255, 255, 255, 0.15);">
+                                            @(string.IsNullOrEmpty(u.DrivingLicenseNumber) ? "Not Provided" : u.DrivingLicenseNumber)
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form asp-action="VerifyUser" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@u.Id" />
+                                                <input type="hidden" name="status" value="@wad_project.Models.VerificationStatus.Verified" />
+                                                <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-semibold text-xs">
+                                                    Verify
+                                                </button>
+                                            </form>
+                                            <form asp-action="VerifyUser" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@u.Id" />
+                                                <input type="hidden" name="status" value="@wad_project.Models.VerificationStatus.Rejected" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold text-xs">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: ALL VEHICLES -->
+    <!-- ========================================================================= -->
+    <div id="tab-vehicles" class="admin-tab-pane @(currentTab == "vehicles" ? "" : "d-none")">
+        <div class="glass-card p-4 rounded-4" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                <div>
+                    <h3 class="h5 fw-bold text-white mb-0">All Vehicles</h3>
+                    <p class="small text-light opacity-75 mb-0">Overview of all approved and host-listed vehicles</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn-primary-gradient py-2 px-3 small" data-bs-toggle="modal" data-bs-target="#adminAddVehicleModal">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        <span>Add New Vehicle</span>
+                    </button>
+                    <div class="position-relative" style="max-width: 250px;">
+                        <input type="text" id="adminVehicleSearch" class="form-control form-control-dark rounded-pill text-white" placeholder="Search vehicles..." onkeyup="filterAdminVehicles()" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0" id="adminVehiclesTable" style="background: transparent;">
+                    <thead>
+                        <tr class="small text-uppercase tracking-wider border-bottom" style="color: #CBD5E1; border-color: rgba(255, 255, 255, 0.1) !important;">
+                            <th>Vehicle</th>
+                            <th>Plate</th>
+                            <th>Daily Rate</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var car in Model.Vehicles)
+                        {
+                            <tr class="admin-veh-row" data-search="@car.Brand.ToLower() @car.Model.ToLower() @car.LicensePlate.ToLower()" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@car.ImageUrl" alt="@car.Brand @car.Model" class="rounded-3 object-fit-cover" style="width: 56px; height: 38px; background: #0A0F1D;" onerror="this.src='https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=400&q=80';" />
+                                        <div>
+                                            <div class="fw-bold text-white">@car.Brand @car.Model (@car.Year)</div>
+                                            <div class="small text-light opacity-75">@car.VehicleType • @car.PickupLocation</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="font-monospace fw-bold text-white px-2 py-1 rounded" style="background: #090E1C; border: 1px solid rgba(255, 255, 255, 0.15);">
+                                        @car.LicensePlate
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-white">$@car.DailyRate<span class="text-light opacity-75 small">/day</span></div>
+                                </td>
+                                <td>
+                                    @if (car.Owner != null)
+                                    {
+                                        <div class="text-white">@car.Owner.FullName</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-light opacity-75">Platform</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (car.Status == wad_project.Models.VehicleStatus.Approved || car.Status == wad_project.Models.VehicleStatus.Available)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">Available</span>
+                                    }
+                                    else if (car.Status == wad_project.Models.VehicleStatus.Booked)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(99, 102, 241, 0.2); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.4);">Booked</span>
+                                    }
+                                    else if (car.Status == wad_project.Models.VehicleStatus.UnderMaintenance)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4);">Maintenance</span>
+                                    }
+                                    else if (car.Status == wad_project.Models.VehicleStatus.Pending)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">Pending</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs text-light opacity-75" style="background: rgba(255, 255, 255, 0.1);">Inactive</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: ALL USERS -->
+    <!-- ========================================================================= -->
+    <div id="tab-users" class="admin-tab-pane @(currentTab == "users" ? "" : "d-none")">
+        <div class="glass-card p-4 rounded-4" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+            <div class="mb-4 pb-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                <h3 class="h5 fw-bold text-white mb-0">User Directory</h3>
+                <p class="small text-light opacity-75 mb-0">Registered accounts and status</p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                    <thead>
+                        <tr class="small text-uppercase tracking-wider border-bottom" style="color: #CBD5E1; border-color: rgba(255, 255, 255, 0.1) !important;">
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>License</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var u in Model.Users)
+                        {
+                            <tr style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                                <td>
+                                    <div class="fw-bold text-white">@u.FullName</div>
+                                </td>
+                                <td>
+                                    <div class="text-white small">@u.Email</div>
+                                </td>
+                                <td>
+                                    @if (u.Role == wad_project.Models.UserRole.Admin)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(99, 102, 241, 0.25); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.5);">Admin</span>
+                                    }
+                                    else if (u.Role == wad_project.Models.UserRole.Owner)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(139, 92, 246, 0.25); color: #C084FC; border: 1px solid rgba(139, 92, 246, 0.5);">Owner</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs text-white" style="background: rgba(255, 255, 255, 0.1);">Customer</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="font-monospace small text-white">
+                                        @(string.IsNullOrEmpty(u.DrivingLicenseNumber) ? "-" : u.DrivingLicenseNumber)
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (u.IsActive)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(16, 185, 129, 0.2); color: #34D399;">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill px-2 py-1 text-xs text-light opacity-50" style="background: rgba(255, 255, 255, 0.1);">Disabled</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="ToggleUserStatus" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@u.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-light rounded-pill px-2 py-1 text-xs">
+                                            @(u.IsActive ? "Disable" : "Enable")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: PROMO CODES -->
+    <!-- ========================================================================= -->
+    <div id="tab-promos" class="admin-tab-pane @(currentTab == "promos" ? "" : "d-none")">
+        <div class="glass-card p-4 rounded-4" style="background: rgba(22, 27, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                <div>
+                    <h3 class="h5 fw-bold text-white mb-0">Promotional Discounts & Coupons</h3>
+                    <p class="small text-light opacity-75 mb-0">Create and manage promo codes for user rental discounts</p>
+                </div>
+                <button type="button" class="btn-primary-gradient py-2 px-3 small" data-bs-toggle="modal" data-bs-target="#adminAddPromoModal">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Create Promo Code</span>
+                </button>
+            </div>
+
+            @if (!Model.PromoCodes.Any())
+            {
+                <div class="p-4 text-center rounded-3" style="background: #0E1321; border: 1px dashed rgba(255, 255, 255, 0.15);">
+                    <div class="text-white fw-semibold">No promo codes created yet</div>
+                    <div class="small text-light opacity-75">Click 'Create Promo Code' to set up discounts for customers.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="small text-uppercase tracking-wider border-bottom" style="color: #CBD5E1; border-color: rgba(255, 255, 255, 0.1) !important;">
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Min Booking</th>
+                                <th>Validity Period</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var promo in Model.PromoCodes)
+                            {
+                                <tr style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                                    <td>
+                                        <span class="font-monospace fw-bold px-3 py-1 rounded" style="background: #090E1C; color: var(--primary-light); border: 1px solid rgba(99, 102, 241, 0.3);">
+                                            @promo.Code
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-white">
+                                            @if (promo.DiscountType == wad_project.Models.DiscountType.Percentage)
+                                            {
+                                                <span>@promo.DiscountValue% OFF</span>
+                                            }
+                                            else
+                                            {
+                                                <span>₹@promo.DiscountValue OFF</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-white small">₹@promo.MinBookingAmount</div>
+                                    </td>
+                                    <td>
+                                        <div class="small text-white">@promo.ValidFrom.ToString("MMM dd, yyyy") - @promo.ValidTo.ToString("MMM dd, yyyy")</div>
+                                        @{
+                                            var isExpired = DateTime.UtcNow > promo.ValidTo;
+                                        }
+                                        @if (isExpired)
+                                        {
+                                            <span class="text-danger text-xs">Expired</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (promo.IsActive && DateTime.UtcNow <= promo.ValidTo)
+                                        {
+                                            <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill px-2 py-1 text-xs text-light opacity-50" style="background: rgba(255, 255, 255, 0.1);">Inactive</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form asp-action="TogglePromoStatus" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@promo.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-light rounded-pill px-2 py-1 text-xs">
+                                                    @(promo.IsActive ? "Disable" : "Enable")
+                                                </button>
+                                            </form>
+                                            <form asp-action="DeletePromoCode" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete promo code @promo.Code?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@promo.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1 text-xs">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Admin Create Vehicle -->
+<div class="modal fade" id="adminAddVehicleModal" tabindex="-1" aria-labelledby="adminAddVehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-white rounded-4 border-0 shadow-2xl" style="background: #1A1F2E; border: 1px solid rgba(255, 255, 255, 0.15) !important;">
+            <div class="modal-header border-bottom p-4" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                <div>
+                    <h5 class="modal-title fw-bold text-white mb-0" id="adminAddVehicleModalLabel" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                        Add Vehicle to Fleet
+                    </h5>
+                    <p class="small text-light opacity-75 mb-0">Instantly add an approved vehicle to the public rental catalog</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateVehicle" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-light small fw-semibold">Brand / Make *</label>
+                            <input asp-for="NewVehicle.Brand" class="form-control form-control-dark rounded-3 text-white" placeholder="e.g. Toyota, Honda, Hyundai, BMW" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-light small fw-semibold">Model Name *</label>
+                            <input asp-for="NewVehicle.Model" class="form-control form-control-dark rounded-3 text-white" placeholder="e.g. Camry, Civic, Creta, 3 Series" required />
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <label class="form-label text-light small fw-semibold">Year *</label>
+                            <input asp-for="NewVehicle.Year" class="form-control form-control-dark rounded-3 text-white" type="number" min="2000" max="2030" required />
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label class="form-label text-light small fw-semibold">License Plate *</label>
+                            <input asp-for="NewVehicle.LicensePlate" class="form-control form-control-dark rounded-3 text-uppercase font-monospace text-white" placeholder="e.g. DL-01-AB-1234" required />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-light small fw-semibold">Vehicle Category</label>
+                            <select asp-for="NewVehicle.VehicleType" class="form-select form-control-dark rounded-3 text-white" asp-items="Html.GetEnumSelectList<wad_project.Models.VehicleType>()"></select>
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <label class="form-label text-light small fw-semibold">Transmission</label>
+                            <select asp-for="NewVehicle.Transmission" class="form-select form-control-dark rounded-3 text-white" asp-items="Html.GetEnumSelectList<wad_project.Models.TransmissionType>()"></select>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label class="form-label text-light small fw-semibold">Fuel Type</label>
+                            <select asp-for="NewVehicle.FuelType" class="form-select form-control-dark rounded-3 text-white" asp-items="Html.GetEnumSelectList<wad_project.Models.FuelType>()"></select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-light small fw-semibold">Seating Capacity</label>
+                            <input asp-for="NewVehicle.SeatingCapacity" class="form-control form-control-dark rounded-3 text-white" type="number" min="1" max="12" />
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label text-light small fw-semibold">Hourly Rate (₹) *</label>
+                            <input asp-for="NewVehicle.HourlyRate" class="form-control form-control-dark rounded-3 text-white" type="number" step="1" min="1" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-light small fw-semibold">Daily Rate (₹) *</label>
+                            <input asp-for="NewVehicle.DailyRate" class="form-control form-control-dark rounded-3 text-white" type="number" step="1" min="1" required />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-light small fw-semibold">Pickup Location *</label>
+                            <input asp-for="NewVehicle.PickupLocation" class="form-control form-control-dark rounded-3 text-white" placeholder="e.g. Downtown Hub, Airport Terminal 1" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-light small fw-semibold">Image URL (Optional)</label>
+                            <input asp-for="NewVehicle.ImageUrl" class="form-control form-control-dark rounded-3 text-white" placeholder="https://... (Leave blank for default photo)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top p-3" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                    <button type="button" class="btn btn-ghost-dark py-2 px-3 rounded-pill text-white" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-primary-gradient py-2 px-4">
+                        <span class="material-symbols-outlined">add</span>
+                        <span>Save & Add to Fleet</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Admin Create Promo Code -->
+<div class="modal fade" id="adminAddPromoModal" tabindex="-1" aria-labelledby="adminAddPromoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content text-white rounded-4 border-0 shadow-2xl" style="background: #1A1F2E; border: 1px solid rgba(255, 255, 255, 0.15) !important;">
+            <div class="modal-header border-bottom p-4" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                <div>
+                    <h5 class="modal-title fw-bold text-white mb-0" id="adminAddPromoModalLabel" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                        Create Promo Code
+                    </h5>
+                    <p class="small text-light opacity-75 mb-0">Set up coupon discounts for rental customers</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreatePromoCode" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label text-light small fw-semibold">Promo Code *</label>
+                            <input asp-for="NewPromoCode.Code" class="form-control form-control-dark rounded-3 text-uppercase font-monospace text-white" placeholder="e.g. DRIVE20, SUMMER500" required />
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label text-light small fw-semibold">Discount Type</label>
+                            <select asp-for="NewPromoCode.DiscountType" class="form-select form-control-dark rounded-3 text-white" asp-items="Html.GetEnumSelectList<wad_project.Models.DiscountType>()"></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-light small fw-semibold">Discount Value *</label>
+                            <input asp-for="NewPromoCode.DiscountValue" class="form-control form-control-dark rounded-3 text-white" type="number" step="0.01" min="1" required />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-light small fw-semibold">Minimum Booking Amount (₹)</label>
+                            <input asp-for="NewPromoCode.MinBookingAmount" class="form-control form-control-dark rounded-3 text-white" type="number" step="1" min="0" />
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label text-light small fw-semibold">Valid From</label>
+                            <input asp-for="NewPromoCode.ValidFrom" type="date" class="form-control form-control-dark rounded-3 text-white" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-light small fw-semibold">Valid To</label>
+                            <input asp-for="NewPromoCode.ValidTo" type="date" class="form-control form-control-dark rounded-3 text-white" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top p-3" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                    <button type="button" class="btn btn-ghost-dark py-2 px-3 rounded-pill text-white" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-primary-gradient py-2 px-4">
+                        <span class="material-symbols-outlined">check</span>
+                        <span>Save Promo Code</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-tab-btn {
+        color: #94A3B8;
+        transition: all 0.2s ease-in-out;
+        border: none;
+    }
+    .admin-tab-btn:hover {
+        color: #FFFFFF;
+        background: rgba(255, 255, 255, 0.08);
+    }
+    .admin-tab-btn.active-tab {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab-pane').forEach(el => el.classList.add('d-none'));
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active-tab'));
+
+            const targetPane = document.getElementById('tab-' + tabName);
+            if (targetPane) {
+                targetPane.classList.remove('d-none');
+            }
+
+            const targetBtn = Array.from(document.querySelectorAll('.admin-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabName));
+            if (targetBtn) {
+                targetBtn.classList.add('active-tab');
+            }
+
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabName);
+            window.history.replaceState({}, '', url);
+        }
+
+        function filterAdminVehicles() {
+            const query = (document.getElementById('adminVehicleSearch').value || '').toLowerCase();
+            document.querySelectorAll('#adminVehiclesTable .admin-veh-row').forEach(row => {
+                const search = (row.getAttribute('data-search') || '').toLowerCase();
+                if (!query || search.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

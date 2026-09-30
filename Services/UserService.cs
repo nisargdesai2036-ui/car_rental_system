@@ -31,6 +31,8 @@ public class UserService : IUserService
             return (false, "An account with this mobile number already exists.", null);
         }
 
+        var selectedRole = model.Role == UserRole.Owner ? UserRole.Owner : UserRole.Customer;
+
         var newUser = new User
         {
             FullName = model.FullName.Trim(),
@@ -38,7 +40,7 @@ public class UserService : IUserService
             MobileNumber = phone,
             DrivingLicenseNumber = string.IsNullOrWhiteSpace(model.DrivingLicenseNumber) ? null : model.DrivingLicenseNumber.Trim().ToUpperInvariant(),
             Password = model.Password,
-            Role = UserRole.Customer,
+            Role = selectedRole,
             VerificationStatus = VerificationStatus.Pending,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
@@ -47,7 +49,11 @@ public class UserService : IUserService
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
-        return (true, "Customer registration successful. Your verification is pending approval.", newUser);
+        var message = selectedRole == UserRole.Owner
+            ? "Owner registration successful. Your account is pending admin verification."
+            : "Customer registration successful. Your verification is pending approval.";
+
+        return (true, message, newUser);
     }
 
     public async Task<(bool Success, string Message, User? User)> RegisterOwnerAsync(RegisterViewModel model)

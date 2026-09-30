@@ -38,6 +38,43 @@
                         </div>
                     }
 
+                    <!-- Account Type Selection (Customer vs Fleet Owner) -->
+                    <div class="mb-4">
+                        <label class="form-label d-block mb-2 text-uppercase fw-semibold" style="color: #CBD5E1; font-size: 0.75rem; letter-spacing: 0.05em;">Register As</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="role-selector-card p-3 rounded-3 d-flex align-items-center gap-2 cursor-pointer w-100 position-relative" 
+                                       id="roleCustomerCard" 
+                                       style="background: rgba(99, 102, 241, 0.12); border: 1.5px solid var(--primary); cursor: pointer; transition: all 0.2s ease;">
+                                    <input type="radio" asp-for="Role" value="@wad_project.Models.UserRole.Customer" id="roleCustomer" class="d-none" checked onchange="handleRoleSelection('Customer')" />
+                                    <div class="brand-icon-box" style="width: 36px; height: 36px; background: rgba(99, 102, 241, 0.2); color: var(--primary-light);">
+                                        <span class="material-symbols-outlined" style="font-size: 1.25rem;">person</span>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-white small">Customer / Renter</div>
+                                        <div class="text-muted text-xs" style="font-size: 0.7rem;">Rent cars & bikes</div>
+                                    </div>
+                                    <span class="material-symbols-outlined position-absolute top-50 end-0 translate-middle-y me-2 text-primary role-check-icon" id="customerCheckIcon" style="font-size: 1.2rem;">check_circle</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="role-selector-card p-3 rounded-3 d-flex align-items-center gap-2 cursor-pointer w-100 position-relative" 
+                                       id="roleOwnerCard" 
+                                       style="background: var(--surface-low); border: 1px solid var(--border-subtle); cursor: pointer; transition: all 0.2s ease;">
+                                    <input type="radio" asp-for="Role" value="@wad_project.Models.UserRole.Owner" id="roleOwner" class="d-none" onchange="handleRoleSelection('Owner')" />
+                                    <div class="brand-icon-box" style="width: 36px; height: 36px; background: rgba(139, 92, 246, 0.2); color: var(--secondary);">
+                                        <span class="material-symbols-outlined" style="font-size: 1.25rem;">car_rental</span>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-white small">Vehicle Owner</div>
+                                        <div class="text-muted text-xs" style="font-size: 0.7rem;">Host cars & earn</div>
+                                    </div>
+                                    <span class="material-symbols-outlined position-absolute top-50 end-0 translate-middle-y me-2 text-muted role-check-icon d-none" id="ownerCheckIcon" style="font-size: 1.2rem;">check_circle</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row g-3">
                         <!-- Full Name -->
                         <div class="col-md-6">
@@ -187,8 +224,8 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" class="btn-primary-gradient w-100 py-3 justify-content-center mb-3">
-                        <span>Create Voyager Account</span>
+                    <button type="submit" id="regSubmitBtn" class="btn-primary-gradient w-100 py-3 justify-content-center mb-3">
+                        <span id="regSubmitBtnText">Create Customer Account</span>
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
 
@@ -225,6 +262,41 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        function handleRoleSelection(role) {
+            const customerCard = document.getElementById('roleCustomerCard');
+            const ownerCard = document.getElementById('roleOwnerCard');
+            const customerCheck = document.getElementById('customerCheckIcon');
+            const ownerCheck = document.getElementById('ownerCheckIcon');
+            const btnText = document.getElementById('regSubmitBtnText');
+
+            if (role === 'Owner') {
+                ownerCard.style.background = 'rgba(139, 92, 246, 0.15)';
+                ownerCard.style.borderColor = 'var(--secondary)';
+                ownerCard.style.borderWidth = '1.5px';
+                ownerCheck.classList.remove('d-none');
+                ownerCheck.classList.add('text-secondary');
+
+                customerCard.style.background = 'var(--surface-low)';
+                customerCard.style.borderColor = 'var(--border-subtle)';
+                customerCard.style.borderWidth = '1px';
+                customerCheck.classList.add('d-none');
+
+                if (btnText) btnText.innerText = 'Create Vehicle Owner Account';
+            } else {
+                customerCard.style.background = 'rgba(99, 102, 241, 0.12)';
+                customerCard.style.borderColor = 'var(--primary)';
+                customerCard.style.borderWidth = '1.5px';
+                customerCheck.classList.remove('d-none');
+
+                ownerCard.style.background = 'var(--surface-low)';
+                ownerCard.style.borderColor = 'var(--border-subtle)';
+                ownerCard.style.borderWidth = '1px';
+                ownerCheck.classList.add('d-none');
+
+                if (btnText) btnText.innerText = 'Create Customer Account';
+            }
+        }
+
         function toggleRegPassword(inputId, iconId) {
             const pwdInput = document.getElementById(inputId);
             const toggleIcon = document.getElementById(iconId);

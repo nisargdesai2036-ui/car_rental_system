@@ -1,9 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using wad_project.Models;
 
 namespace wad_project.ViewModels;
 
 public class RegisterViewModel
 {
+    [Display(Name = "Account Type")]
+    public UserRole Role { get; set; } = UserRole.Customer;
+
     [Required(ErrorMessage = "Full Name is required.")]
     [StringLength(100, MinimumLength = 3, ErrorMessage = "Full Name must be between 3 and 100 characters.")]
     [Display(Name = "Full Name")]
