@@ -1,0 +1,149 @@
+@model List<wad_project.Models.Booking>
+@using wad_project.Models
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<!-- Ambient Lighting Canvas Flares -->
+<div class="ambient-flare flare-primary" style="top: 10%; left: 25%; width: 500px; height: 500px;"></div>
+<div class="ambient-flare flare-secondary" style="bottom: 10%; right: 20%; width: 450px; height: 450px;"></div>
+
+<div class="container-xl py-5 position-relative" style="z-index: 10;">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            
+            <div class="card-glass p-4 p-sm-5 position-relative overflow-hidden shadow-2xl" 
+                 style="border-radius: var(--radius-3xl); background: linear-gradient(135deg, rgba(22, 27, 42, 0.95) 0%, rgba(37, 42, 57, 0.60) 100%); border: 1px solid var(--border-card);">
+                
+                <!-- Background Grid Lighting Accent -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+
+                <!-- Header / Feedback Alerts -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success py-2 px-3 small mb-4 d-flex align-items-center gap-2 position-relative" style="z-index: 5; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); color: #10B981;">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span>@TempData["SuccessMessage"]</span>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger py-2 px-3 small mb-4 d-flex align-items-center gap-2 position-relative" style="z-index: 5; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #FFB4AB;">
+                        <span class="material-symbols-outlined">error</span>
+                        <span>@TempData["ErrorMessage"]</span>
+                    </div>
+                }
+
+                <!-- Bookings Header Bar -->
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom position-relative" style="z-index: 2; border-color: var(--border-subtle) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="brand-icon-box" style="width: 48px; height: 48px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.5rem;">event_note</span>
+                        </div>
+                        <div>
+                            <h2 class="headline-md text-white mb-0">My Bookings</h2>
+                            <p class="text-muted small mb-0">View and manage your self-drive reservations.</p>
+                        </div>
+                    </div>
+                    <span class="badge-pill badge-primary">@Model.Count Bookings</span>
+                </div>
+
+                <!-- Bookings List Body -->
+                <div class="position-relative" style="z-index: 2;">
+                    @if (Model == null || Model.Count == 0)
+                    {
+                        <div class="text-center py-5">
+                            <span class="material-symbols-outlined text-muted" style="font-size: 3.5rem;">car_rental</span>
+                            <h4 class="text-white mt-3 mb-1">No Reservations Found</h4>
+                            <p class="text-muted small mb-4">You have not booked any cars yet.</p>
+                            <a asp-controller="Home" asp-action="Explore" class="btn-primary-gradient px-4 py-2 small">
+                                <span class="material-symbols-outlined">search</span>
+                                <span>Explore Fleet</span>
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var b in Model)
+                            {
+                                <div class="p-3 rounded-3" style="background: var(--surface-low); border: 1px solid var(--border-subtle);">
+                                    <!-- Booking Top Reference & Status -->
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-bold text-white small font-mono">@b.BookingReference</div>
+                                        <div>
+                                            @if (b.Status == BookingStatus.Confirmed)
+                                            {
+                                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-0.5 rounded-pill small">Confirmed</span>
+                                            }
+                                            else if (b.Status == BookingStatus.Pending)
+                                            {
+                                                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 px-2 py-0.5 rounded-pill small">Pending</span>
+                                            }
+                                            else if (b.Status == BookingStatus.Completed)
+                                            {
+                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 px-2 py-0.5 rounded-pill small">Completed</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2 py-0.5 rounded-pill small">Cancelled</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Car Details -->
+                                    <div class="text-white fw-semibold mb-1">
+                                        @(b.Vehicle != null ? $"{b.Vehicle.Brand} {b.Vehicle.Model}" : "Vehicle")
+                                        <span class="text-muted small fw-normal">(@b.RentalType Rental)</span>
+                                    </div>
+
+                                    <!-- Schedule & Location -->
+                                    <div class="small text-muted mb-2">
+                                        <div><span class="text-white-50">Pickup:</span> @b.PickupDateTime.ToString("dd MMM yyyy, hh:mm tt")</div>
+                                        <div><span class="text-white-50">Return:</span> @b.ReturnDateTime.ToString("dd MMM yyyy, hh:mm tt")</div>
+                                        <div><span class="text-white-50">Hub:</span> @b.PickupLocation</div>
+                                    </div>
+
+                                    <!-- Total & Actions -->
+                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: rgba(255,255,255,0.06) !important;">
+                                        <div>
+                                            <span class="text-muted small">Total Fare: </span>
+                                            <span class="fw-bold text-white fs-6">₹@b.TotalAmount.ToString("N0")</span>
+                                        </div>
+
+                                        @if (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)
+                                        {
+                                            <form asp-controller="Account" asp-action="CancelBooking" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="bookingId" value="@b.Id" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-3 rounded-pill" style="font-size: 0.8rem;">
+                                                    Cancel Booking
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top position-relative" style="z-index: 2; border-color: var(--border-subtle) !important;">
+                    <a asp-controller="Account" asp-action="Profile" class="btn-ghost-dark py-2 px-3 small">
+                        <span class="material-symbols-outlined">person</span>
+                        <span>My Profile</span>
+                    </a>
+
+                    <a asp-controller="Home" asp-action="Index" class="btn-primary-gradient py-2 px-3 small">
+                        <span class="material-symbols-outlined">directions_car</span>
+                        <span>Browse Fleet</span>
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

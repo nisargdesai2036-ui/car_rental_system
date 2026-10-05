@@ -1,16 +1,18 @@
 @model wad_project.ViewModels.UserProfileViewModel
+@using wad_project.Models
 @{
     ViewData["Title"] = "My Profile";
 }
 
-<!-- Atmospheric Lighting Canvas Flares -->
+<!-- Ambient Lighting Canvas Flares -->
 <div class="ambient-flare flare-primary" style="top: 10%; left: 25%; width: 500px; height: 500px;"></div>
 <div class="ambient-flare flare-secondary" style="bottom: 10%; right: 20%; width: 450px; height: 450px;"></div>
 
 <div class="container-xl py-5 position-relative" style="z-index: 10;">
     <div class="row justify-content-center">
         <div class="col-lg-6 col-md-8 col-sm-11">
-            <div class="card-glass p-4 p-sm-5 position-relative overflow-hidden shadow-2xl" style="border-radius: var(--radius-3xl); background: linear-gradient(135deg, rgba(22, 27, 42, 0.95) 0%, rgba(37, 42, 57, 0.60) 100%); border: 1px solid var(--border-card);">
+            <div class="card-glass p-4 p-sm-5 position-relative overflow-hidden shadow-2xl" 
+                 style="border-radius: var(--radius-3xl); background: linear-gradient(135deg, rgba(22, 27, 42, 0.95) 0%, rgba(37, 42, 57, 0.60) 100%); border: 1px solid var(--border-card);">
                 
                 <!-- Background Grid Lighting Accent -->
                 <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
@@ -43,7 +45,7 @@
                     <div class="flex-grow-1">
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <h2 class="headline-md text-white mb-0">@Model.FullName</h2>
-                            <span class="badge-pill badge-primary">Voyager</span>
+                            <span class="badge-pill badge-primary">@Model.Role</span>
                         </div>
                         <div class="text-muted small">@Model.Email</div>
                         <div class="label-sm mt-1" style="color: var(--tertiary);">Member since @Model.CreatedAt.ToString("MMMM yyyy")</div>
@@ -77,28 +79,38 @@
                             <div class="d-flex align-items-center gap-3">
                                 <span class="material-symbols-outlined text-success" style="font-size: 1.5rem;">verified_user</span>
                                 <div>
-                                    <div class="fw-bold text-white" style="font-size: 0.9375rem;">Identity Verified</div>
-                                    <div class="text-muted small">Eligible for instant keyless dispatch across all hubs.</div>
+                                    <div class="fw-bold text-white" style="font-size: 0.9375rem;">Account Verification</div>
+                                    <div class="text-muted small">Status: @Model.VerificationStatus</div>
                                 </div>
                             </div>
-                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1 rounded-pill small">Active</span>
+                            <span class="badge @(Model.VerificationStatus == VerificationStatus.Verified ? "bg-success" : "bg-warning text-dark") px-2 py-1 rounded-pill small">
+                                @Model.VerificationStatus
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Actions Footer -->
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top position-relative" style="z-index: 2; border-color: var(--border-subtle) !important;">
-                    <a asp-controller="Home" asp-action="Index" class="btn-ghost-dark py-2 px-3">
-                        <span class="material-symbols-outlined">arrow_back</span>
-                        <span>Back to Fleet</span>
+                <!-- Navigation to My Bookings & Signout -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top position-relative gap-2" style="z-index: 2; border-color: var(--border-subtle) !important;">
+                    <a asp-controller="Account" asp-action="Bookings" class="btn-primary-gradient py-2 px-3 small">
+                        <span class="material-symbols-outlined">event_note</span>
+                        <span>My Bookings</span>
                     </a>
 
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 py-2 small fw-semibold d-inline-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
-                            <span>Sign Out</span>
-                        </button>
-                    </form>
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Home" asp-action="Index" class="btn-ghost-dark py-2 px-3 small">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            <span>Fleet</span>
+                        </a>
+
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-3 py-2 small fw-semibold d-inline-flex align-items-center gap-1">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">logout</span>
+                                <span>Sign Out</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
             </div>

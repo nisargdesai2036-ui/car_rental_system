@@ -109,8 +109,8 @@
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--primary);">person</span>
                                 My Profile
                             </a>
-                            <a class="dropdown-item-dark" href="#my-bookings">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--tertiary);">directions_car</span>
+                            <a class="dropdown-item-dark" asp-controller="Account" asp-action="Bookings">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--tertiary);">event_note</span>
                                 My Bookings
                             </a>
                             @if (User.IsInRole("Owner"))
@@ -189,6 +189,10 @@
             <a class="mobile-nav-link" asp-controller="Account" asp-action="Profile">
                 <span class="material-symbols-outlined" style="color: var(--success);">person</span>
                 My Profile
+            </a>
+            <a class="mobile-nav-link" asp-controller="Account" asp-action="Bookings">
+                <span class="material-symbols-outlined" style="color: var(--tertiary);">event_note</span>
+                My Bookings
             </a>
             @if (User.IsInRole("Owner"))
             {

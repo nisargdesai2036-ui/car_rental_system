@@ -98,7 +98,7 @@ public class HomeController : Controller
         }
 
         TempData["SuccessMessage"] = $"Booking reserved successfully! Reference: {booking.BookingReference}. Total: ₹{booking.TotalAmount:N0}";
-        return RedirectToAction("Profile", "Account");
+        return RedirectToAction("Bookings", "Account");
     }
 
     [HttpGet]

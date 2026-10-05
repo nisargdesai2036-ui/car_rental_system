@@ -10,11 +10,13 @@ namespace wad_project.Controllers;
 public class AccountController : Controller
 {
     private readonly IUserService _userService;
+    private readonly IBookingService _bookingService;
     private readonly ILogger<AccountController> _logger;
 
-    public AccountController(IUserService userService, ILogger<AccountController> logger)
+    public AccountController(IUserService userService, IBookingService bookingService, ILogger<AccountController> logger)
     {
         _userService = userService;
+        _bookingService = bookingService;
         _logger = logger;
     }
 
@@ -133,6 +135,8 @@ public class AccountController : Controller
                     Email = user.Email,
                     MobileNumber = user.MobileNumber,
                     DrivingLicenseNumber = user.DrivingLicenseNumber,
+                    Role = user.Role,
+                    VerificationStatus = user.VerificationStatus,
                     CreatedAt = user.CreatedAt
                 };
                 return View(vm);
@@ -140,6 +144,50 @@ public class AccountController : Controller
         }
 
         return RedirectToAction(nameof(Login));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Bookings()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            var bookings = await _bookingService.GetUserBookingsAsync(userId);
+            return View(bookings);
+        }
+
+        return RedirectToAction(nameof(Login));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelBooking(int bookingId)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            var (success, message) = await _bookingService.CancelBookingAsync(bookingId, userId);
+            if (success)
+            {
+                TempData["SuccessMessage"] = message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = message;
+            }
+        }
+
+        return RedirectToAction(nameof(Bookings));
     }
 
     private async Task SignInUserCookieAsync(wad_project.Models.User user)

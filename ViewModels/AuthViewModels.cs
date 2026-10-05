@@ -70,5 +70,14 @@ public class UserProfileViewModel
     [Display(Name = "Driving License Number")]
     public string? DrivingLicenseNumber { get; set; }
 
+    [Display(Name = "Account Role")]
+    public UserRole Role { get; set; } = UserRole.Customer;
+
+    [Display(Name = "Verification Status")]
+    public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+
     public DateTime CreatedAt { get; set; }
+
+    // User Bookings
+    public List<Booking> Bookings { get; set; } = new();
 }
