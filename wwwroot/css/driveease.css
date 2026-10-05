@@ -801,3 +801,237 @@ label.label-sm {
     color: rgba(255, 255, 255, 0.40) !important;
 }
 
+/* ==========================================================================
+   COLOR VISIBILITY FIXES — Ensures all text is readable on dark backgrounds
+   ========================================================================== */
+
+/* ── Bootstrap .text-muted override ──
+   Default Bootstrap muted (#6c757d) is near-black on our dark bg.
+   Bump it to a clearly visible light-grey. */
+.text-muted,
+.small.text-muted,
+p.text-muted,
+span.text-muted,
+div.text-muted,
+li.text-muted {
+    color: #94A3B8 !important; /* slate-400 — clearly visible on dark */
+}
+
+/* ── Body copy default ── */
+body, p, span, li, td, th, div {
+    --bs-body-color: #DEE2F6;
+}
+
+/* ── Headings always bright white ── */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+}
+
+/* ── Form inputs: always white text on dark background ── */
+input.form-control,
+textarea.form-control,
+.form-control {
+    color: #FFFFFF !important;
+    background-color: var(--surface-low) !important;
+    border-color: var(--border-card) !important;
+}
+
+/* ── Select dropdowns: white text, dark bg ── */
+select.form-select,
+.form-select {
+    color: #FFFFFF !important;
+    background-color: var(--surface-low) !important;
+    border-color: var(--border-card) !important;
+    /* Fix the dropdown arrow color for dark selects */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394A3B8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Select dropdown <option> items rendered by OS must have dark bg */
+select.form-select option,
+.form-select option {
+    background-color: #1A1F2E;
+    color: #F8FAFC;
+}
+
+/* ── datetime-local & number inputs ── */
+input[type="datetime-local"],
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+    color: #FFFFFF !important;
+    background-color: var(--surface-low) !important;
+    border-color: var(--border-card) !important;
+    color-scheme: dark; /* Makes the date/time picker chrome dark */
+}
+
+/* ── datetime-local calendar icon tint ── */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0.8);
+    cursor: pointer;
+}
+
+/* ── Form labels: always clearly readable ── */
+label,
+.form-label {
+    color: #CBD5E1 !important;
+    font-weight: 600;
+}
+
+/* ── Bootstrap alert overrides for dark theme ── */
+.alert {
+    color: #F8FAFC;
+}
+.alert-danger {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    color: #fca5a5 !important;
+}
+.alert-success {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    color: #6ee7b7 !important;
+}
+.alert-warning {
+    background: rgba(245, 158, 11, 0.15) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    color: #fcd34d !important;
+}
+.alert-info {
+    background: rgba(56, 189, 248, 0.10) !important;
+    border-color: rgba(56, 189, 248, 0.25) !important;
+    color: var(--tertiary) !important;
+}
+
+/* ── Bootstrap validation messages ── */
+.text-danger,
+span.text-danger,
+.invalid-feedback {
+    color: #fca5a5 !important;
+}
+
+/* ── Footer links ── */
+.footer-dark a,
+.footer-dark .text-reset {
+    color: #94A3B8 !important;
+    transition: color 0.2s ease;
+}
+.footer-dark a:hover,
+.footer-dark .text-reset:hover {
+    color: var(--primary-light) !important;
+}
+.footer-dark .text-white,
+.footer-dark .fw-bold.text-white {
+    color: #F8FAFC !important;
+}
+
+/* ── Breadcrumb & nav metadata text ── */
+.breadcrumb-item,
+.breadcrumb-item a {
+    color: #94A3B8 !important;
+}
+.breadcrumb-item.active {
+    color: #F8FAFC !important;
+}
+
+/* ── Metric/stat numbers on home hero ── */
+.fw-bold.fs-4.text-white,
+.text-white {
+    color: #F8FAFC !important;
+}
+
+/* ── Card glass default text ── */
+.card-glass {
+    color: var(--text-body);
+}
+.card-glass p,
+.card-glass span,
+.card-glass div {
+    color: inherit;
+}
+
+/* ── Bootstrap .small helper ── */
+.small {
+    color: inherit;
+}
+
+/* ── bg-dark on inputs conflicts with dark theme — normalize ── */
+.bg-dark.form-control,
+.bg-dark.form-select,
+input.bg-dark,
+select.bg-dark {
+    background-color: var(--surface-low) !important;
+    color: #FFFFFF !important;
+    border-color: var(--border-card) !important;
+}
+
+/* ── border-secondary Bootstrap override ── */
+.border-secondary {
+    border-color: var(--border-card) !important;
+}
+
+/* ── Dropdown menu text ── */
+.dropdown-menu .dropdown-item {
+    color: var(--text-body) !important;
+    background: transparent;
+}
+.dropdown-menu .dropdown-item:hover {
+    background: var(--surface-high) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Modal body text ── */
+.modal-content {
+    color: var(--text-body) !important;
+    background-color: var(--surface-container) !important;
+    border-color: var(--border-card) !important;
+}
+.modal-header,
+.modal-footer {
+    border-color: var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Table text in admin/profile views ── */
+table, th, td {
+    color: var(--text-body);
+}
+thead th {
+    color: var(--text-primary) !important;
+    background-color: var(--surface-high) !important;
+    border-color: var(--border-subtle) !important;
+}
+tbody tr {
+    background-color: transparent;
+    border-color: var(--border-subtle) !important;
+}
+tbody tr:hover {
+    background-color: var(--surface-low) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Ensure spec-badge inner text is white ── */
+.row.g-2.text-center .text-white.fw-semibold {
+    color: #F8FAFC !important;
+}
+
+/* ── Profile / Admin page section headings ── */
+.section-title,
+.page-title {
+    color: var(--text-primary) !important;
+}
+
+/* ── Fix: "New to DriveEase?" Login page link text ── */
+a[style*="color: var(--primary-light)"] {
+    color: var(--primary-light) !important;
+}
+
+/* ── Ensure secondary info text inside cards is always readable ── */
+.card-glass .text-muted {
+    color: #94A3B8 !important;
+}
+.card-glass strong,
+.card-glass b {
+    color: #F8FAFC !important;
+}
+

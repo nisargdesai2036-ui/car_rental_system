@@ -1,27 +1,24 @@
-# DriveEase Documentation
+# DriveEase Project Documentation
 
-This folder holds the project documentation for **DriveEase**, a self-drive vehicle rental web app built with ASP.NET Core 9.0 MVC, Entity Framework Core, and PostgreSQL (Supabase).
+This directory contains technical documentation for **DriveEase**, a self-drive vehicle rental and fleet management web application built with **ASP.NET Core 10.0 (MVC & REST API)**, Entity Framework Core 10, ASP.NET Core Identity, and SQLite.
 
-## Contents
+## Documentation Catalog
 
-| Document | What it covers |
+| Document | Description |
 |---|---|
-| `PROJECT_OVERVIEW.md` | High-level overview: tech stack, architecture, layers, current state, and how to run. Start here. |
-| `DriveEase_Data_Models.pdf` | All 8 entity models — attributes, data types, sample data, primary/foreign keys, enums, and relationships. |
-| `DriveEase_Controllers.pdf` | The Controllers layer — routing, `HomeController`, and the controllers a full build would add. |
-| `DriveEase_Data.pdf` | The Data layer — `ApplicationDbContext`, `DbSeeder`, `IDataStore`, and `InMemoryDataStore`. |
-| `DriveEase_Views.pdf` | The Views layer — Razor config views, the shared layout, and content views. |
-| `DriveEase_ViewModels.pdf` | The ViewModels layer — all 10 view models with validation rules and purpose. |
-| `DriveEase_Services.pdf` | The Services layer — the 6 business services, their methods, and business rules. |
-| `AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md` | Verification report for Authentication and Role-Based Access Control (RBAC) security test suite. |
+| [`PROJECT_OVERVIEW.md`](PROJECT_OVERVIEW.md) | **Primary Architecture Reference**: Tech stack (.NET 10), high-level architecture, EF Core entity schema, business logic algorithms, security/RBAC, UI design system, and startup instructions. |
+| [`AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md`](AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md) | **Security Verification Report**: 30 automated test assertions validating AuthN login/logout flows, identity cookies, and RBAC boundaries for Admin, Owner, and Customer roles. |
+| [`controller_endpoints_authorization_rules.txt`](controller_endpoints_authorization_rules.txt) | **API & Controller Authorization Matrix**: Exhaustive list of REST API endpoints across all 8 API controllers, mapping HTTP methods, authorization attributes, allowed roles, and business rules. |
+| `DriveEase_Data_Models.pdf` | Detailed specification of entity models, data types, and primary/foreign key relationships. |
+| `DriveEase_Controllers.pdf` | Architectural breakdown of controller routing and request handling. |
+| `DriveEase_Services.pdf` | Business logic service layer methods, availability overlap algorithms, and pricing rules. |
+| `DriveEase_ViewModels.pdf` | Data Transfer Objects (DTOs) and ViewModels with validation rules. |
+| `DriveEase_Views.pdf` | Razor presentation views, layout structure, and component styling. |
+| `DriveEase_Data.pdf` | Database context (`ApplicationDbContext`), migrations, and seeding strategies. |
 
-## Suggested reading order
+## Suggested Reading Order
 
-1. `PROJECT_OVERVIEW.md` — the big picture
-2. `DriveEase_Data_Models.pdf` — the domain (what the data looks like)
-3. `DriveEase_Services.pdf` — the business logic that acts on the data
-4. `DriveEase_ViewModels.pdf` → `DriveEase_Controllers.pdf` → `DriveEase_Views.pdf` — the presentation flow
-5. `DriveEase_Data.pdf` — how data is stored and seeded
-6. `AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md` — authentication and authorization test suite verification
-
-> Note: `WAD_Project_Requirements.pdf` remains in the project root as it is the original assignment brief, not generated documentation.
+1. [`PROJECT_OVERVIEW.md`](PROJECT_OVERVIEW.md) — Start here for the complete overview of the current codebase and execution procedures.
+2. [`controller_endpoints_authorization_rules.txt`](controller_endpoints_authorization_rules.txt) — Review API endpoints and permission boundaries.
+3. [`AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md`](AUTHENTICATION_AND_AUTHORIZATION_TEST_RESULTS.md) — Review security test coverage and pass rates.
+4. Additional PDF specification documents for layer-by-layer details.
